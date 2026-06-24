@@ -286,11 +286,10 @@ describe("Button clickability — full audit", () => {
       expect(screen.getByTestId("search-page")).toBeDefined();
     });
 
-    it("notification bell calls toast.info", () => {
+    it("notification bell navigates to notifications page", () => {
       renderWP(<AppLayout />);
       const bellBtn = screen.getByLabelText("通知");
-      fireEvent.click(bellBtn);
-      expect(vi.mocked(toast.info)).toHaveBeenCalled();
+      expect(bellBtn.closest("a")).toHaveAttribute("href", "/notifications");
     });
   });
 
