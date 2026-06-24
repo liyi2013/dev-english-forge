@@ -29,10 +29,10 @@ export default function TechnicalEnglish() {
       <PageHeader title={t('tech.title')} subtitle={t('tech.desc')} />
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-9 space-y-6">
+        <div className="col-span-12 lg:col-span-9 space-y-6 min-w-0">
           {/* Continue learning highlight */}
           <div className="panel p-5 bg-gradient-to-br from-accent to-transparent border-primary/20">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('tech.continueLearning')}</span>
@@ -60,7 +60,7 @@ export default function TechnicalEnglish() {
             <h2 className="text-sm font-semibold text-foreground mb-3">{t('learning.center')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {pathKeys.map((p) => (
-                <Link key={p.nameKey} to={`/technical-english/paths/${p.slug}`} className="panel p-4 hover:border-primary/40 hover:shadow-sm transition block">
+                <Link key={p.nameKey} to={`/technical-english/paths/${p.slug}`} className="panel p-4 hover:border-primary/40 hover:shadow-sm transition block min-w-0">
                   <h4 className="text-sm font-semibold">{t(p.nameKey)}</h4>
                   <p className="text-xs text-muted-foreground mt-1">{t(p.focusKey)}</p>
                   <div className="mt-3 flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function TechnicalEnglish() {
         </div>
 
         {/* Skills panel */}
-        <div className="col-span-12 lg:col-span-3">
+        <div className="col-span-12 lg:col-span-3 min-w-0">
           <Panel title={t('tech.skills')} description={t("tech.englishBreakdown")}>
             <ul className="space-y-4">
               {skills.map((s) => (

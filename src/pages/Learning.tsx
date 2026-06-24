@@ -51,14 +51,14 @@ export default function Learning() {
         {paths.map((p) => {
           const pp = pathProgress(p.modules);
           return (
-            <div key={p.id} className="panel p-5 flex flex-col">
+            <div key={p.id} className="panel p-5 flex flex-col min-w-0">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-9 h-9 rounded-md bg-accent text-primary flex items-center justify-center">
                     <span className="text-lg font-mono font-bold">{p.name[0]}</span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold leading-tight">{p.name}</h3>
+                    <h3 className="text-sm font-semibold leading-tight truncate">{p.name}</h3>
                     <p className="text-[11px] text-muted-foreground">{p.desc}</p>
                   </div>
                 </div>
@@ -110,13 +110,13 @@ export default function Learning() {
         <Panel title={t('learning.recommended')} action={<Button variant="ghost" size="sm" onClick={() => toast.success(t("common.refresh"))}>{t('common.refresh')}</Button>}>
           <ul className="divide-y divide-border -my-2">
             {recommended.map((r) => (
-              <li key={r.title} className="flex items-center justify-between py-3 group">
-                <div className="flex items-center gap-3">
+              <li key={r.title} className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-3 gap-2 group">
+                <div className="flex items-center gap-3 flex-wrap min-w-0">
                   <span className="chip-blue">{r.tag}</span>
-                  <span className="text-sm font-medium">{r.title}</span>
+                  <span className="text-sm font-medium break-words">{r.title}</span>
                   <span className="chip">{r.level}</span>
                 </div>
-                <div className="flex items-center gap-4 text-muted-foreground">
+                <div className="flex items-center gap-4 text-muted-foreground shrink-0">
                   <span className="text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> {r.time}</span>
                   <Link to={`/technical-english/${r.slug}`}><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
                 </div>

@@ -11,10 +11,10 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-6 gap-4">
+    <div className="flex flex-col sm:flex-row items-start justify-between mb-6 gap-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{subtitle}</p>}
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground break-words">{title}</h1>
+        {subtitle && <p className="text-sm text-muted-foreground mt-1 max-w-2xl break-words">{subtitle}</p>}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
     </div>
@@ -37,12 +37,12 @@ export function Panel({
   padded?: boolean;
 }) {
   return (
-    <section className={cn("panel", className)}>
+    <section className={cn("panel min-w-0", className)}>
       {(title || action) && (
-        <header className="flex items-center justify-between px-5 py-3 border-b border-border">
+        <header className="flex flex-wrap items-center justify-between px-5 py-3 border-b border-border gap-2">
           <div>
-            {title && <h3 className="text-sm font-semibold text-foreground">{title}</h3>}
-            {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+            {title && <h3 className="text-sm font-semibold text-foreground break-words">{title}</h3>}
+            {description && <p className="text-xs text-muted-foreground mt-0.5 break-words">{description}</p>}
           </div>
           {action}
         </header>

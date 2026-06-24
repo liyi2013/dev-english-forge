@@ -169,8 +169,8 @@ export default function AppLayout() {
 
       <div className="flex-1 flex flex-col min-w-0">
         <TopHeader onMenuClick={() => setMobileOpen(true)} />
-        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
-          <div className="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 lg:pb-0">
+          <div className="w-full max-w-[1400px] min-w-0 mx-auto p-4 md:p-6 lg:p-8">
             <Outlet />
           </div>
         </main>
