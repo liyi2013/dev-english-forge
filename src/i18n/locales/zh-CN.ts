@@ -54,6 +54,7 @@ const zhCN: Record<string, string> = {
   'dash.minutes': '分钟',
   'dash.startFocus': '开始专注',
 
+  'learning.topics': '主题',
   'learning.center': '学习中心',
   'learning.desc': '结构化学习路径，按模块循序渐进。选择一个路径，逐个模块攻克。',
   'learning.continue': '继续学习',
@@ -318,6 +319,9 @@ const zhCN: Record<string, string> = {
   'tech.apisFocus': 'API、数据库、服务',
   'tech.architectureFocus': '架构、扩展、权衡',
   'tech.cicdFocus': 'CI/CD、Docker、Kubernetes',
+  'tech.backToTech': '返回技术英语',
+  'tech.pathNotFound': '路径未找到',
+  'tech.pathNotFoundDesc': '你查找的技术路径不存在。',
   'tech.englishBreakdown': '技术英语能力分解',
   'tech.reachB2': '达到口语 B2 水平',
   'tech.explainEndpoint': '自信地用英语解释端点、状态码和幂等性。',

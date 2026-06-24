@@ -53,6 +53,7 @@ const enUS: Record<string, string> = {
   'dash.minutes': 'min',
   'dash.startFocus': 'Start focus',
 
+  'learning.topics': 'Topics',
   'learning.center': 'Learning Center',
   'learning.desc': 'Structured paths with modules and milestones. Pick a path and work module by module.',
   'learning.continue': 'Continue Learning',
@@ -317,6 +318,9 @@ const enUS: Record<string, string> = {
   'tech.apisFocus': 'APIs, databases, services',
   'tech.architectureFocus': 'Architecture, scaling, trade-offs',
   'tech.cicdFocus': 'CI/CD, Docker, Kubernetes',
+  'tech.backToTech': 'Back to Technical English',
+  'tech.pathNotFound': 'Path not found',
+  'tech.pathNotFoundDesc': 'The technical path you are looking for does not exist.',
   'tech.englishBreakdown': 'Technical English breakdown',
   'tech.reachB2': 'Reach B2 in Speaking',
   'tech.explainEndpoint': 'Explain endpoints, status codes, and idempotency in English with confidence.',

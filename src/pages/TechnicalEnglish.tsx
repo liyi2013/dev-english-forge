@@ -15,9 +15,9 @@ const modes = [
 ];
 
 const pathKeys = [
-  { nameKey: "tech.backendEnglish", focusKey: "tech.apisFocus", progress: 48 },
-  { nameKey: "tech.systemDesignEnglish", focusKey: "tech.architectureFocus", progress: 22 },
-  { nameKey: "tech.devopsEnglish", focusKey: "tech.cicdFocus", progress: 11 },
+  { nameKey: "tech.backendEnglish", focusKey: "tech.apisFocus", progress: 48, slug: "backend-english" },
+  { nameKey: "tech.systemDesignEnglish", focusKey: "tech.architectureFocus", progress: 22, slug: "system-design-english" },
+  { nameKey: "tech.devopsEnglish", focusKey: "tech.cicdFocus", progress: 11, slug: "devops-english" },
 ];
 
 export default function TechnicalEnglish() {
@@ -61,14 +61,14 @@ export default function TechnicalEnglish() {
             <h2 className="text-sm font-semibold text-foreground mb-3">{t('learning.center')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {pathKeys.map((p) => (
-                <div key={p.nameKey} role="button" tabIndex={0} aria-label={t("common.comingSoon")} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toast.info(t("common.comingSoon")); } }}>
+                <Link key={p.nameKey} to={`/technical-english/paths/${p.slug}`} className="panel p-4 hover:border-primary/40 hover:shadow-sm transition block">
                   <h4 className="text-sm font-semibold">{t(p.nameKey)}</h4>
                   <p className="text-xs text-muted-foreground mt-1">{t(p.focusKey)}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Progress value={p.progress} />
                     <span className="text-[11px] font-mono text-muted-foreground shrink-0">{p.progress}%</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

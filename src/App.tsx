@@ -16,6 +16,7 @@ import InterviewReport from "./pages/InterviewReport";
 import Review from "./pages/Review";
 import Profile from "./pages/Profile";
 import SearchResults from "./pages/SearchResults";
+import TechnicalPathDetail from "./pages/TechnicalPathDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/learning" element={<Learning />} />
             <Route path="/technical-english" element={<TechnicalEnglish />} />
+            <Route path="/technical-english/paths/:pathSlug" element={<TechnicalPathDetail />} />
             <Route path="/technical-english/:topicSlug" element={<TopicDetail />} />
             <Route path="/interview-english" element={<InterviewEnglish />} />
             <Route path="/workplace-english" element={<WorkplaceEnglish />} />

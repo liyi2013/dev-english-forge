@@ -370,6 +370,20 @@ describe("Button clickability — full audit", () => {
 
   // =========== Other pages ===========
   it("Dashboard renders without crash", () => { renderWP(<Dashboard />); });
-  it("TechnicalEnglish renders without crash", () => { renderWP(<TechnicalEnglish />); });
+  it("TechnicalEnglish path cards link to paths detail", async () => {
+    renderWP(<TechnicalEnglish />);
+    // Backend English card should be a link, not a coming-soon button
+    const backendLink = screen.getByText("后端英语").closest("a");
+    expect(backendLink).toBeDefined();
+    expect(backendLink!.getAttribute("href")).toBe("/technical-english/paths/backend-english");
+    // System Design English
+    const systemLink = screen.getByText("系统设计英语").closest("a");
+    expect(systemLink).toBeDefined();
+    expect(systemLink!.getAttribute("href")).toBe("/technical-english/paths/system-design-english");
+    // DevOps English
+    const devopsLink = screen.getByText("DevOps 英语").closest("a");
+    expect(devopsLink).toBeDefined();
+    expect(devopsLink!.getAttribute("href")).toBe("/technical-english/paths/devops-english");
+  });
   it("Profile renders without crash", () => { renderWP(<Profile />); });
 });
