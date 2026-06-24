@@ -1,17 +1,17 @@
 import { useState, useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
+import { PageHeader, Panel, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { AnswerGapPanel } from "@/components/common/AnswerGapPanel";
 import { RecommendedLearningCard } from "@/components/common/RecommendedLearningCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useI18n } from "@/i18n";
-import { addToReviewQueue, addReport, getCompletedReports, getReviewQueue } from "@/lib/mockStorage";
+import { addToReviewQueue, addReport, getCompletedReports, getReviewQueue, saveSentence } from "@/lib/mockStorage";
 import { getReportById } from "@/data/mockReports";
 import { toast } from "sonner";
 import {
   CheckCircle2, AlertCircle, ArrowRight, Download, RotateCcw, Sparkles,
-  User, Bot, Wand2, ListChecks, Mic,
+  User, Bot, Wand2, Mic,
 } from "lucide-react";
 import type { InterviewReport as InterviewReportType } from "@/types/interview";
 

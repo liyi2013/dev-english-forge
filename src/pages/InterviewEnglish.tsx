@@ -47,7 +47,7 @@ export default function InterviewEnglish() {
             <h2 className="text-sm font-semibold mb-3">{t('interview.scenarios')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {scenarios.map((s) => (
-                <div key={s.name} className="panel p-4 hover:border-primary/40 transition cursor-pointer">
+                <div key={s.name} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-semibold">{s.name}</h4>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateMockReport, getReportById, getMockReports } from "./mockReports";
+import { generateMockReport, getReportById } from "./mockReports";
 
 const baseConfig = {
   mode: "quick",
