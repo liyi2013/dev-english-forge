@@ -287,5 +287,28 @@ const zhCN: Record<string, string> = {
   'report.addedToReviewQueue': '已加入复习队列',
   'report.alreadyAddedToReview': '已在复习队列中',
   'unit.of': ' / ',
+  'report.englishExpression': '英语表达',
+  'report.technicalAccuracy': '技术准确性',
+  'report.answerStructure': '回答结构',
+  'report.confidence': '自信度',
+  'report.greatScore': '优秀——已具备面试水平！',
+  'report.solidScore': '不错——接近面试水平。',
+  'report.keepPracticing': '继续练习——你正在进步。',
+  'dash.smallTasks': '个小任务',
+  'dash.focusAreas': '基于近期学习会话的专注领域',
+  'dash.basedOnYesterday': '基于昨日学习情况推荐',
+  'dash.approaching': '即将达到',
+  'dash.liveFeedback': '流利度、词汇、结构实时反馈。',
+  'dash.greetingMorning': '早上好',
+  'dash.greetingAfternoon': '下午好',
+  'dash.greetingEvening': '晚上好',
+  'report.notFound': '报告未找到',
+  'report.notFoundDesc': '未找到该面试报告，可能已被删除或链接失效。',
+
+
+
+
+
+
 };
 export default zhCN;

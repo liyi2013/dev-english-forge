@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import zhCNMessages from './locales/zh-CN';
 
 type Locale = 'zh-CN' | 'en-US';
 
@@ -17,18 +18,14 @@ function getSavedLocale(): Locale {
   return 'zh-CN';
 }
 
-// Lazy-load messages to avoid circular deps at module level
 const messagesCache: Record<Locale, Record<string, string>> = {
-  'zh-CN': {},
+  'zh-CN': zhCNMessages,
   'en-US': {},
 };
 
 async function loadMessages(locale: Locale) {
   if (Object.keys(messagesCache[locale]).length > 0) return;
-  if (locale === 'zh-CN') {
-    const mod = await import('./locales/zh-CN');
-    messagesCache['zh-CN'] = mod.default;
-  } else {
+  if (locale === 'en-US') {
     const mod = await import('./locales/en-US');
     messagesCache['en-US'] = mod.default;
   }
@@ -37,8 +34,12 @@ async function loadMessages(locale: Locale) {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getSavedLocale);
-  const [messages, setMessages] = useState<Record<string, string>>({});
+  const initialLocale = getSavedLocale();
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const [messages, setMessages] = useState<Record<string, string>>(
+    () => ({ ...messagesCache[initialLocale] })
+  );
+  const enUSRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     loadMessages(locale).then(() => {
@@ -53,8 +54,18 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Preload en-US in background so fallback is always available
+  useEffect(() => {
+    loadMessages('en-US').then(() => {
+      enUSRef.current = messagesCache['en-US'];
+    });
+  }, []);
+
   const t = useCallback((key: string): string => {
-    return messages[key] ?? key;
+    const val = messages[key];
+    if (val !== undefined && val !== '') return val;
+    if (enUSRef.current[key]) return enUSRef.current[key];
+    return key;
   }, [messages]);
 
   return (

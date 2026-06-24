@@ -248,7 +248,7 @@ export default function SearchResults() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-mono text-muted-foreground">{r.overallScore}</span>
-                      <Link to="/ai-interview/report"><Button variant="outline" size="sm">{t('common.open')}</Button></Link>
+                      <Link to={`/ai-interview/report/${r.id}`}><Button variant="outline" size="sm">{t('common.open')}</Button></Link>
                     </div>
                   </li>
                 ))}

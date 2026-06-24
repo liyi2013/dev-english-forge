@@ -287,5 +287,28 @@ const enUS: Record<string, string> = {
   'report.addedToReviewQueue': 'Added to review queue',
   'report.alreadyAddedToReview': 'Already in review queue',
   'unit.of': ' of ',
+  'report.englishExpression': 'English Expression',
+  'report.technicalAccuracy': 'Technical Accuracy',
+  'report.answerStructure': 'Answer Structure',
+  'report.confidence': 'Confidence',
+  'report.greatScore': "Great — interview-ready!",
+  'report.solidScore': 'Solid — close to interview-ready.',
+  'report.keepPracticing': 'Keep practicing — you are making progress.',
+  'dash.smallTasks': ' small tasks',
+  'dash.focusAreas': 'Focus areas based on your recent sessions',
+  'dash.basedOnYesterday': "Based on yesterday's session",
+  'dash.approaching': 'approaching',
+  'dash.liveFeedback': 'Live feedback on fluency, vocabulary & structure.',
+  'dash.greetingMorning': 'Good morning',
+  'dash.greetingAfternoon': 'Good afternoon',
+  'dash.greetingEvening': 'Good evening',
+  'report.notFound': 'Report not found',
+  'report.notFoundDesc': 'The interview report was not found. It may have been deleted or the link is invalid.',
+
+
+
+
+
+
 };
 export default enUS;

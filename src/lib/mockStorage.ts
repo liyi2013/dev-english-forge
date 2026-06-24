@@ -202,3 +202,31 @@ export function saveTopic(slug: string): void {
     localStorage.setItem(SAVED_TOPICS_KEY, JSON.stringify(topics));
   }
 }
+
+// --- Generated Full Reports (stored as full InterviewReport JSON) ---
+const GENERATED_REPORTS_KEY = PREFIX + 'generated_reports';
+
+export function getGeneratedReports(): Record<string, unknown>[] {
+  try {
+    const raw = localStorage.getItem(GENERATED_REPORTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveGeneratedReport(report: Record<string, unknown>): void {
+  const reports = getGeneratedReports();
+  // Replace if existing id found, otherwise push
+  const idx = reports.findIndex((r) => r.id === report.id);
+  if (idx >= 0) {
+    reports[idx] = report;
+  } else {
+    reports.push(report);
+  }
+  localStorage.setItem(GENERATED_REPORTS_KEY, JSON.stringify(reports));
+}
+
+export function getGeneratedReportById(id: string): Record<string, unknown> | undefined {
+  return getGeneratedReports().find((r) => r.id === id);
+}

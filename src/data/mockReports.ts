@@ -209,8 +209,20 @@ export const mockReports: InterviewReport[] = [
   },
 ];
 
+import { getGeneratedReportById } from "@/lib/mockStorage";
 export function getReportById(id: string): InterviewReport | undefined {
-  return mockReports.find((r) => r.id === id);
+  const found = mockReports.find((r) => r.id === id);
+  if (found) return found;
+  // Also check localStorage generated reports
+  try {
+    const raw = localStorage.getItem("devenglish_generated_reports");
+    if (raw) {
+      const reports = JSON.parse(raw);
+      const gen = reports.find((r) => r.id === id);
+      if (gen) return gen;
+    }
+  } catch {}
+  return undefined;
 }
 
 export function getReports() {
@@ -222,3 +234,120 @@ export function getLatestReport(): InterviewReport {
 }
 
 export function getMockReports() { return mockReports; }
+
+// Generate a deterministic mock report based on interview config and answers
+export function generateMockReport(
+  config: { mode: string; role: string; difficulty: string; language: string; questionCount: number; interviewType: string; duration: string },
+  answers: Record<number, { text: string; duration: number }>,
+  questions: { question: string; type: string; hint: string }[]
+): InterviewReport {
+  const reportId = `report-generated-${Date.now()}`;
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10);
+
+  const questionCount = Math.min(config.questionCount || questions.length, questions.length);
+
+  // Use answer completeness to derive scores
+  const answeredCount = Object.keys(answers).length;
+  const answerRate = Math.min(answeredCount / Math.max(questionCount, 1), 1);
+  const avgLength = Object.values(answers).reduce((sum, a) => sum + a.text.length, 0) / Math.max(answeredCount, 1);
+  const lengthScore = Math.min(avgLength / 50, 1); // 50 chars per answer is "good"
+
+  const baseScore = Math.max(50, Math.round(60 + answerRate * 20 + lengthScore * 10));
+  const variation = Math.floor(Math.random() * 10) - 5;
+
+  const overallScore = Math.min(98, Math.max(35, baseScore + variation));
+  const englishExpression = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 12) - 6));
+  const technicalAccuracy = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 10) - 5));
+  const answerStructure = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 14) - 7));
+  const confidence = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 10) - 5));
+
+  // Generate strong/weak points based on scores
+  const strongPoints: string[] = [];
+  const weakPoints: string[] = [];
+
+  if (englishExpression >= 70) strongPoints.push('Clear English expression');
+  else weakPoints.push('English expression needs improvement');
+
+  if (technicalAccuracy >= 70) strongPoints.push('Good technical accuracy');
+  else weakPoints.push('Technical accuracy needs work');
+
+  if (answerStructure >= 70) strongPoints.push('Well-structured answers');
+  else weakPoints.push('Answer structure could be improved');
+
+  if (confidence >= 70) strongPoints.push('Good confidence and delivery');
+  else weakPoints.push('Confidence could be stronger');
+
+  if (answeredCount === questionCount) strongPoints.push('Completed all questions');
+  else weakPoints.push(`${questionCount - answeredCount} question(s) not answered`);
+
+  if (avgLength > 40) strongPoints.push('Provided detailed responses');
+  else weakPoints.push('Answers were too brief');
+
+  // Generate question details from answered questions
+  const questionDetails: import('@/types/interview').InterviewQuestionDetail[] = [];
+  for (let i = 0; i < questionCount && i < questions.length; i++) {
+    const answer = answers[i];
+    const qText = questions[i].question;
+    const qType = questions[i].type;
+
+    const userAns = answer?.text || '[Not answered]';
+    const qScore = userAns === '[Not answered]' ? 30 : Math.min(95, Math.max(35, overallScore + Math.floor(Math.random() * 16) - 8));
+
+    const gapAnalysis = [
+      userAns.length < 30 ? 'Answer is too short. Aim for 2-3 sentences.' : 'Consider adding more specific technical details.',
+      'Think about including real-world examples or scenarios.',
+    ];
+    const missingKeyPoints = [
+      'Consider mentioning relevant technologies',
+      'Add a concrete example from your experience',
+    ];
+
+    questionDetails.push({
+      questionIndex: i + 1,
+      question: qText,
+      type: qType,
+      userAnswer: userAns,
+      idealAnswer: `A strong answer would address the key aspects of "${qText}" with specific technical details and examples.`,
+      gapAnalysis,
+      missingKeyPoints,
+      betterAnswerVersion: userAns !== '[Not answered]'
+        ? `To improve your answer on "${qText}", focus on providing structured reasoning with specific examples and technical depth.`
+        : `Consider researching common interview approaches for "${qText}" and practice structuring your response.`,
+      score: qScore,
+    });
+  }
+
+  // Recommended learning based on weak areas
+  const recommendedLearning: import('@/types/interview').RecommendedLearning[] = [];
+  if (technicalAccuracy < 70) {
+    recommendedLearning.push({ tag: 'Technical', title: 'Technical Vocabulary', desc: 'Improve technical terminology.', time: '10 min', to: '/technical-english' });
+  }
+  if (answerStructure < 70) {
+    recommendedLearning.push({ tag: 'Interview', title: 'STAR Method', desc: 'Structure answers with STAR.', time: '8 min', to: '/interview-english' });
+  }
+  if (recommendedLearning.length === 0) {
+    recommendedLearning.push({ tag: 'Practice', title: 'Mock Interview', desc: 'Keep practicing to maintain your level.', time: '10 min', to: '/ai-interview' });
+  }
+
+  return {
+    id: reportId,
+    sessionId: `session-${Date.now()}`,
+    date: dateStr,
+    config: {
+      mode: config.mode as 'quick' | 'jd' | 'full',
+      role: config.role,
+      difficulty: config.difficulty,
+      language: config.language,
+      questionCount: config.questionCount,
+      interviewType: config.interviewType,
+      duration: config.duration,
+    },
+    overallScore,
+    scores: { englishExpression, technicalAccuracy, answerStructure, confidence },
+    strongPoints,
+    weakPoints,
+    questionDetails,
+    recommendedLearning,
+  };
+}

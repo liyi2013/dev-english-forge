@@ -341,7 +341,7 @@ export default function Review() {
               />
             ) : (
               reports.map((r) => (
-                <Link key={r.id} to="/ai-interview/report" className="panel p-4 flex items-center justify-between hover:border-primary/40 transition block">
+                <Link key={r.id} to={`/ai-interview/report/${r.id}`} className="panel p-4 flex items-center justify-between hover:border-primary/40 transition block">
                   <div>
                     <p className="text-sm font-medium">{t("review.mockInterview")} · {new Date(r.date).toLocaleDateString()}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{t('review.score')}: {r.overallScore}/100</p>

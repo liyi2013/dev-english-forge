@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Panel, Button, Progress } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { getQuestionsByMode } from "@/data/mockInterviewSessions";
-import { getInterviewConfig, setInterviewProgress, clearInterviewProgress } from "@/lib/mockStorage";
+import { generateMockReport } from "@/data/mockReports";
+import { getInterviewConfig, clearInterviewProgress, saveGeneratedReport, addReport } from "@/lib/mockStorage";
 import { Mic, Square, ChevronLeft, ChevronRight, X, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function InterviewRoom() {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const config = getInterviewConfig();
   const questions = config ? getQuestionsByMode(config.mode) : [];
   const questionCount = config?.questionCount ?? 5;
@@ -17,17 +19,35 @@ export default function InterviewRoom() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+
+  // Use ref for answers to avoid async state loss on rapid navigation
+  const answersRef = useRef<Record<number, { text: string; duration: number }>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentQuestion = displayQuestions[currentIndex];
-  const progress = ((currentIndex + 1) / displayQuestions.length) * 100;
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  // Unified save: saves current answer to ref + stops recording
+  const saveCurrentAnswer = () => {
+    // Stop recording if active
+    if (isRecording) {
+      setIsRecording(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    const answerText = userAnswer || (isRecording ? `[Recorded answer - ${recordingTime}s]` : "");
+    if (answerText) {
+      answersRef.current[currentIndex] = { text: answerText, duration: recordingTime };
+    }
+  };
 
   const handleToggleRecording = () => {
     if (isRecording) {
@@ -36,7 +56,12 @@ export default function InterviewRoom() {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      setAnswers((prev) => ({ ...prev, [currentIndex]: userAnswer || `[Recorded answer - ${recordingTime}s]` }));
+      // Save recorded answer
+      const answerText = userAnswer || `[Recorded answer - ${recordingTime}s]`;
+      if (answerText) {
+        answersRef.current[currentIndex] = { text: answerText, duration: recordingTime };
+        setUserAnswer(answerText);
+      }
     } else {
       setIsRecording(true);
       setRecordingTime(0);
@@ -47,10 +72,8 @@ export default function InterviewRoom() {
   };
 
   const handleNext = () => {
+    saveCurrentAnswer();
     if (currentIndex < displayQuestions.length - 1) {
-      if (userAnswer) {
-        setAnswers((prev) => ({ ...prev, [currentIndex]: userAnswer }));
-      }
       setCurrentIndex(currentIndex + 1);
       setUserAnswer("");
       setIsRecording(false);
@@ -62,29 +85,42 @@ export default function InterviewRoom() {
   };
 
   const handlePrevious = () => {
+    saveCurrentAnswer();
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      setUserAnswer(answers[currentIndex - 1] || "");
+      const prevAnswer = answersRef.current[currentIndex - 1]?.text || "";
+      setUserAnswer(prevAnswer);
+    }
+  };
+
+  const finishInterview = () => {
+    // Save current answer one last time
+    saveCurrentAnswer();
+
+    const finalAnswers = { ...answersRef.current };
+
+    // Generate report with current config and answers
+    if (config) {
+      const report = generateMockReport(config, finalAnswers, displayQuestions);
+      // Save full report data to localStorage
+      saveGeneratedReport(report as unknown as Record<string, unknown>);
+      // Also save to reports summary
+      addReport({
+        id: report.id,
+        date: report.date,
+        overallScore: report.overallScore,
+      });
+      // Clear progress
+      clearInterviewProgress();
+      // Navigate to report detail page
+      navigate(`/ai-interview/report/${report.id}`);
+    } else {
+      navigate('/ai-interview/report');
     }
   };
 
   const handleEndInterview = () => {
-    if (userAnswer) {
-      setAnswers((prev) => ({ ...prev, [currentIndex]: userAnswer }));
-    }
-    // Save progress
-    const answersRecord: Record<number, { text: string; duration: number }> = {};
-    Object.entries(answers).forEach(([key, val]) => {
-      answersRecord[parseInt(key)] = { text: val, duration: 0 };
-    });
-    if (userAnswer) {
-      answersRecord[currentIndex] = { text: userAnswer, duration: recordingTime };
-    }
-    setInterviewProgress({
-      currentIndex,
-      answers: answersRecord,
-      completed: true,
-    });
+    finishInterview();
   };
 
   const formatTime = (s: number) => {
@@ -118,9 +154,9 @@ export default function InterviewRoom() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">{formatTime(recordingTime)}</span>
-          <Link to="/ai-interview/report" onClick={handleEndInterview}>
-            <Button variant="ghost" size="sm"><X className="w-3.5 h-3.5" /> {t('ai.endInterview')}</Button>
-          </Link>
+          <Button variant="ghost" size="sm" onClick={handleEndInterview}>
+            <X className="w-3.5 h-3.5" /> {t('ai.endInterview')}
+          </Button>
         </div>
       </div>
 
@@ -131,10 +167,8 @@ export default function InterviewRoom() {
             <Panel padded={false}>
               <div className="p-6">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                    {t('ai.question')} {currentIndex + 1} {t('ai.of')} {displayQuestions.length} · {currentQuestion.type}
-                  </span>
-                  <Progress value={progress} className="w-32" />
+                  <span className="chip-blue">{currentQuestion.type}</span>
+                  <span className="text-xs text-muted-foreground">{t('ai.question')} {currentIndex + 1}/{displayQuestions.length}</span>
                 </div>
                 <h2 className="mt-4 text-xl font-semibold leading-relaxed">{currentQuestion.question}</h2>
                 <p className="text-sm text-muted-foreground mt-3">{currentQuestion.hint}</p>
@@ -188,9 +222,9 @@ export default function InterviewRoom() {
                   {t('ai.next')} <ChevronRight className="w-4 h-4" />
                 </Button>
               ) : (
-                <Link to="/ai-interview/report" onClick={handleEndInterview}>
-                  <Button>{t('ai.endInterview')} <ChevronRight className="w-4 h-4" /></Button>
-                </Link>
+                <Button onClick={handleEndInterview}>
+                  {t('ai.endInterview')} <ChevronRight className="w-4 h-4" />
+                </Button>
               )}
             </div>
           </div>

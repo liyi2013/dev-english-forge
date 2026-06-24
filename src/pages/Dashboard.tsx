@@ -14,18 +14,18 @@ export default function Dashboard() {
     });
   }
 
-  function greeting() {
+  function greeting(t) {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
+    if (h < 12) return t("dash.greetingMorning");
+    if (h < 18) return t("dash.greetingAfternoon");
+    return t("dash.greetingEvening");
   }
 
   return (
     <div className="space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">{formatToday()}</p>
-        <h1 className="text-2xl font-semibold mt-1">{greeting()}, {data.greetingName}</h1>
+        <h1 className="text-2xl font-semibold mt-1">{greeting(t)}, {data.greetingName}</h1>
       </div>
 
       {/* Daily focus banner */}
@@ -74,7 +74,7 @@ export default function Dashboard() {
           </Panel>
 
           {/* Today's plan */}
-          <Panel title={t('dash.todayPlan')} description={`${data.todayPlan.items.length} small tasks`}>
+          <Panel title={t('dash.todayPlan')} description={`${data.todayPlan.items.length}${t("dash.smallTasks")}`}>
             <ul className="divide-y divide-border -my-2">
               {data.todayPlan.items.map((it) => (
                 <li key={it.label} className="flex items-center justify-between py-3 gap-3">
@@ -91,7 +91,7 @@ export default function Dashboard() {
           </Panel>
 
           {/* Weak skills */}
-          <Panel title={t('dash.weakSkills')} description="Focus areas based on your recent sessions" action={<Link to="/review" className="text-xs text-primary hover:underline">{t('common.viewAll')} →</Link>}>
+          <Panel title={t('dash.weakSkills')} description={t("dash.focusAreas")} action={<Link to="/review" className="text-xs text-primary hover:underline">{t('common.viewAll')} →</Link>}>
             <ul className="space-y-3">
               {data.weakSkills.map((s) => (
                 <li key={s.tag}>
@@ -106,7 +106,7 @@ export default function Dashboard() {
           </Panel>
 
           {/* Recommended */}
-          <Panel title={t('dash.recommended')} description="Based on yesterday's session">
+          <Panel title={t('dash.recommended')} description={t("dash.basedOnYesterday")}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {data.recommended.map((rec) => (
                 rec.isPromoted ? (
@@ -120,7 +120,7 @@ export default function Dashboard() {
                         <Mic className="w-3 h-3" /> {rec.tag}
                       </div>
                       <h5 className="mt-2 text-sm font-semibold leading-snug">{rec.title}</h5>
-                      <p className="text-xs text-primary-foreground/80 mt-1">Live feedback on fluency, vocabulary & structure.</p>
+                      <p className="text-xs text-primary-foreground/80 mt-1">{t("dash.liveFeedback")}</p>
                     </div>
                     <div className="mt-3 text-xs font-medium inline-flex items-center gap-1">
                       {t('common.start')} <ArrowRight className="w-3.5 h-3.5" />
@@ -162,7 +162,7 @@ export default function Dashboard() {
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">{t('dash.level')}</div>
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-xl font-semibold text-foreground">{data.level.current}</span>
-              <span className="text-xs text-muted-foreground">approaching {data.level.next}</span>
+              <span className="text-xs text-muted-foreground">{t("dash.approaching")} {data.level.next}</span>
             </div>
             <Progress value={data.level.progress} className="mt-3" />
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">

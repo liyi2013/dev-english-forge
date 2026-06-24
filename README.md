@@ -35,8 +35,9 @@ All "AI" features (interview scoring, live analysis, feedback) are simulated wit
 | `/interview-english` | Interview English | Scenarios, STAR pattern, question banks |
 | `/workplace-english` | Workplace English | Scenarios, useful phrases, mini-drills |
 | `/ai-interview` | AI Interview Lobby | Mode selection, configuration |
-| `/ai-interview/room` | Interview Room | Mock questions, recording, live analysis |
-| `/ai-interview/report` | Interview Report | Scores, deep dive, recommended learning |
+| `/ai-interview/room` | Interview Room | Mock questions, recording, live analysis, generates report on end |
+| `/ai-interview/report` | Interview Report | Latest report (redirects to report detail) |
+| `/ai-interview/report/:reportId` | Interview Report Detail | Scores, deep dive, recommended learning by report ID |
 | `/review` | Review Center | Wrong answers, vocabulary, sentences, reports |
 | `/profile` | Profile | Skill profile, preferences, activity |
 | `/search` | Search | Search across topics, vocabulary, questions, reports |
@@ -55,7 +56,7 @@ All "AI" features (interview scoring, live analysis, feedback) are simulated wit
 
 - `src/i18n/locales/zh-CN.ts` — Chinese translations
 - `src/i18n/locales/en-US.ts` — English translations
-- `src/i18n/index.ts` — i18n runtime with locale change listeners
+- `src/i18n/index.tsx` — I18nProvider + useI18n hook with zh-CN sync load and en-US fallback
 
 ## Mock Data Structure
 
@@ -84,6 +85,9 @@ Handled by `src/lib/mockStorage.ts`:
 - `interview_config` — last interview configuration
 - `interview_progress` — in-progress interview answers
 - `reports` — completed report metadata
+- `generated_reports` — full generated interview report data
+- `saved_topics` — saved topic slugs
+- `reviewed_mock_item_ids` — reviewed mock item IDs
 
 ## TypeScript Types
 
@@ -146,7 +150,7 @@ The project is organized to make migration straightforward:
 
 ## Tech Stack
 
-- Vite 5 + React 18 + TypeScript
+- Vite 8 + React 18 + TypeScript
 - Tailwind CSS 3 + shadcn/ui
 - React Router v6
 - TanStack React Query

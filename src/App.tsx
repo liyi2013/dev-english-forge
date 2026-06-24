@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/ai-interview" element={<AIInterviewLobby />} />
             <Route path="/ai-interview/room" element={<InterviewRoom />} />
             <Route path="/ai-interview/report" element={<InterviewReport />} />
+            <Route path="/ai-interview/report/:reportId" element={<InterviewReport />} />
             <Route path="/review" element={<Review />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/search" element={<SearchResults />} />

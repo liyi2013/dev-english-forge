@@ -1,24 +1,47 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { AnswerGapPanel } from "@/components/common/AnswerGapPanel";
 import { RecommendedLearningCard } from "@/components/common/RecommendedLearningCard";
+import { EmptyState } from "@/components/common/EmptyState";
 import { useI18n } from "@/i18n";
 import { addToReviewQueue, addReport, getCompletedReports, getReviewQueue } from "@/lib/mockStorage";
-import { getLatestReport } from "@/data/mockReports";
+import { getReportById } from "@/data/mockReports";
 import { toast } from "sonner";
 import {
   CheckCircle2, AlertCircle, ArrowRight, Download, RotateCcw, Sparkles,
-  User, Bot, Wand2, ListChecks,
+  User, Bot, Wand2, ListChecks, Mic,
 } from "lucide-react";
+import type { InterviewReport as InterviewReportType } from "@/types/interview";
 
 export default function InterviewReport() {
   const { t } = useI18n();
-  const report = getLatestReport();
+  const { reportId } = useParams<{ reportId?: string }>();
+  const navigate = useNavigate();
+
+  const report = useMemo<InterviewReportType | undefined>(() => {
+    if (reportId) {
+      return getReportById(reportId);
+    }
+    // No reportId: try to find latest generated report from localStorage
+    try {
+      const raw = localStorage.getItem('devenglish_generated_reports');
+      if (raw) {
+        const reports = JSON.parse(raw) as InterviewReportType[];
+        if (reports.length > 0) {
+          return reports[reports.length - 1];
+        }
+      }
+    } catch {}
+    // Fallback to first static mock report
+    return getReportById('report-1');
+  }, [reportId]);
+
   const [added, setAdded] = useState(false);
 
   const handleAddToReview = () => {
+    if (!report) return;
     if (added) {
       toast.info(t('report.alreadyAddedToReview'));
       return;
@@ -65,18 +88,42 @@ export default function InterviewReport() {
     toast.success(t('report.addedToReviewQueue'));
   };
 
+  // Empty state when no report found
+  if (!report) {
+    return (
+      <div>
+        <PageHeader title={t('report.title')} subtitle="" />
+        <EmptyState
+          icon={<Mic className="w-8 h-8" />}
+          title={t("report.notFound")}
+          description={t("report.notFoundDesc")}
+          action={
+            <div className="flex gap-3">
+              <Link to="/ai-interview">
+                <Button variant="outline">{t('ai.startInterview')}</Button>
+              </Link>
+              <Link to="/review">
+                <Button variant="outline">{t('nav.review')}</Button>
+              </Link>
+            </div>
+          }
+        />
+      </div>
+    );
+  }
+
   const scoreItems = [
-    { name: 'English Expression', value: report.scores.englishExpression },
-    { name: 'Technical Accuracy', value: report.scores.technicalAccuracy },
-    { name: 'Answer Structure', value: report.scores.answerStructure },
-    { name: 'Confidence', value: report.scores.confidence },
+    { name: t('report.englishExpression'), value: report.scores.englishExpression },
+    { name: t('report.technicalAccuracy'), value: report.scores.technicalAccuracy },
+    { name: t('report.answerStructure'), value: report.scores.answerStructure },
+    { name: t('report.confidence'), value: report.scores.confidence },
   ];
 
   return (
     <div>
       <PageHeader
         title={t('report.title')}
-        subtitle={`${report.config.role} · ${report.config.difficulty} · ${report.config.questionCount} questions · ${report.config.duration}`}
+        subtitle={`${report.config.role} · ${report.config.difficulty} · ${report.config.questionCount} ${t('ai.question')} · ${report.config.duration}`}
         actions={
           <>
             <Button variant="outline"><Download className="w-3.5 h-3.5" /> {t('report.exportPdf')}</Button>
@@ -107,9 +154,9 @@ export default function InterviewReport() {
                 </div>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                {report.overallScore >= 80 ? 'Great — interview-ready!' :
-                 report.overallScore >= 70 ? 'Solid — close to interview-ready.' :
-                 'Keep practicing — you are making progress.'}
+                {report.overallScore >= 80 ? t('report.greatScore') :
+                 report.overallScore >= 70 ? t('report.solidScore') :
+                 t('report.keepPracticing')}
               </p>
             </div>
             <div className="border-t border-border p-5">
