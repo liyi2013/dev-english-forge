@@ -209,7 +209,6 @@ export const mockReports: InterviewReport[] = [
   },
 ];
 
-import { getGeneratedReportById } from "@/lib/mockStorage";
 export function getReportById(id: string): InterviewReport | undefined {
   const found = mockReports.find((r) => r.id === id);
   if (found) return found;

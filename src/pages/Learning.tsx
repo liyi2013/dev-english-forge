@@ -40,6 +40,7 @@ export default function Learning() {
     title: t.title,
     time: `${t.progress}%`,
     level: t.level,
+    slug: t.slug,
   }));
 
   return (
@@ -117,7 +118,7 @@ export default function Learning() {
                 </div>
                 <div className="flex items-center gap-4 text-muted-foreground">
                   <span className="text-xs flex items-center gap-1"><Clock className="w-3 h-3" /> {r.time}</span>
-                  <Link to={r.slug ? `/technical-english/${r.slug}` : "#"}><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
+                  <Link to={`/technical-english/${r.slug}`}><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
                 </div>
               </li>
             ))}

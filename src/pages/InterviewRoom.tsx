@@ -74,8 +74,9 @@ export default function InterviewRoom() {
   const handleNext = () => {
     saveCurrentAnswer();
     if (currentIndex < displayQuestions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setUserAnswer("");
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      setUserAnswer(answersRef.current[nextIndex]?.text || "");
       setIsRecording(false);
       if (timerRef.current) {
         clearInterval(timerRef.current);
