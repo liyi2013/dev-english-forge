@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { SaveButton } from "@/components/common/SaveButton";
 import { isSentenceSaved, saveSentence, removeSentence } from "@/lib/mockStorage";
@@ -6,11 +7,24 @@ import { MessageSquare } from "lucide-react";
 
 export function SentenceTab({ topic }: { topic: LearningTopic }) {
   const { t } = useI18n();
+  const [savedPatterns, setSavedPatterns] = useState<Set<string>>(() => {
+    return new Set(topic.sentencePatterns.filter((s) => isSentenceSaved(s.pattern)).map((s) => s.pattern));
+  });
+
+  const handleToggle = (pattern: string) => {
+    if (savedPatterns.has(pattern)) {
+      removeSentence(pattern);
+      setSavedPatterns((prev) => { const next = new Set(prev); next.delete(pattern); return next; });
+    } else {
+      saveSentence({ pattern, savedAt: new Date().toISOString() });
+      setSavedPatterns((prev) => { const next = new Set(prev); next.add(pattern); return next; });
+    }
+  };
 
   return (
     <div className="space-y-4">
       {topic.sentencePatterns.map((s) => {
-        const saved = isSentenceSaved(s.pattern);
+        const saved = savedPatterns.has(s.pattern);
         return (
           <div key={s.pattern} className="panel p-4 border-border/60 hover:border-primary/30 transition">
             <div className="flex items-start justify-between gap-4">
@@ -28,7 +42,7 @@ export function SentenceTab({ topic }: { topic: LearningTopic }) {
               </div>
               <SaveButton
                 saved={saved}
-                onToggle={() => saved ? removeSentence(s.pattern) : saveSentence({ pattern: s.pattern, savedAt: new Date().toISOString() })}
+                onToggle={() => handleToggle(s.pattern)}
                 savedLabel={t('common.saved')}
                 unsavedLabel={t('common.save')}
               />

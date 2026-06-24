@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { SaveButton } from "@/components/common/SaveButton";
 import { isVocabSaved, saveVocabulary, removeVocabulary } from "@/lib/mockStorage";
@@ -5,11 +6,24 @@ import type { LearningTopic } from "@/types/learning";
 
 export function VocabularyTab({ topic }: { topic: LearningTopic }) {
   const { t } = useI18n();
+  const [savedTerms, setSavedTerms] = useState<Set<string>>(() => {
+    return new Set(topic.vocabulary.filter((v) => isVocabSaved(v.term)).map((v) => v.term));
+  });
+
+  const handleToggle = (term: string) => {
+    if (savedTerms.has(term)) {
+      removeVocabulary(term);
+      setSavedTerms((prev) => { const next = new Set(prev); next.delete(term); return next; });
+    } else {
+      saveVocabulary({ term, savedAt: new Date().toISOString() });
+      setSavedTerms((prev) => { const next = new Set(prev); next.add(term); return next; });
+    }
+  };
 
   return (
     <div className="space-y-4">
       {topic.vocabulary.map((v) => {
-        const saved = isVocabSaved(v.term);
+        const saved = savedTerms.has(v.term);
         return (
           <div key={v.term} className="panel p-4 border-border/60 hover:border-primary/30 transition">
             <div className="flex items-start justify-between gap-4">
@@ -28,7 +42,7 @@ export function VocabularyTab({ topic }: { topic: LearningTopic }) {
               </div>
               <SaveButton
                 saved={saved}
-                onToggle={() => saved ? removeVocabulary(v.term) : saveVocabulary({ term: v.term, savedAt: new Date().toISOString() })}
+                onToggle={() => handleToggle(v.term)}
                 savedLabel={t('common.saved')}
                 unsavedLabel={t('common.save')}
               />

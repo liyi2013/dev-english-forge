@@ -3,29 +3,42 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { PageHeader, Tabs, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { getTopicBySlug } from "@/data/mockTopics";
+import { saveVocabulary, isVocabSaved } from "@/lib/mockStorage";
+import { toast } from "sonner";
 import { ReadTab } from "./topic/ReadTab";
 import { VocabularyTab } from "./topic/VocabularyTab";
 import { SentenceTab } from "./topic/SentenceTab";
 import { SpeakTab } from "./topic/SpeakTab";
 import { InterviewTab } from "./topic/InterviewTab";
 import {
-  ArrowRight, Target, Sparkles, MessageSquare, Mic, BookOpen,
+  ArrowRight, Target, Sparkles, MessageSquare, Mic,
 } from "lucide-react";
 
 const tabKeys = ["Read", "Vocabulary", "Sentence", "Speak", "Interview"];
 
-const outcomes: Record<string, string> = {
-  Read: "Understand the concept in English.",
-  Vocabulary: "Remember key terms and recall them on demand.",
-  Sentence: "Build reusable sentence patterns you can plug into real conversations.",
-  Speak: "Explain the concept aloud, clearly and in your own words.",
-  Interview: "Answer a real interview question end-to-end.",
+const outcomeKeys: Record<string, string> = {
+  Read: "topic.outcomeRead",
+  Vocabulary: "topic.outcomeVocabulary",
+  Sentence: "topic.outcomeSentence",
+  Speak: "topic.outcomeSpeak",
+  Interview: "topic.outcomeInterview",
 };
 
 function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof getTopicBySlug>> }) {
   const { t } = useI18n();
   const [tab, setTab] = useState("Read");
+  const [topicSaved, setTopicSaved] = useState(() => isVocabSaved(topic.title));
+  const tabLabels = tabKeys.map((k) => t(`topic.tab${k}` as keyof typeof import('@/i18n/locales/zh-CN').default));
 
+  const handleSaveTopic = () => {
+    if (topicSaved) {
+      toast.info("Already saved");
+    } else {
+      saveVocabulary({ term: topic.title, savedAt: new Date().toISOString() });
+      setTopicSaved(true);
+      toast.success("Topic saved");
+    }
+  };
 
   const previewItems = [
     { tabKey: "Vocabulary", icon: Sparkles, label: topic.vocabulary[0]?.term ?? '', body: topic.vocabulary[0]?.definitionEn ?? '' },
@@ -33,6 +46,8 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
     { tabKey: "Speak", icon: Mic, label: t('speak.prompt'), body: topic.speakingPrompt.prompt.slice(0, 60) + '…' },
     { tabKey: "Interview", icon: MessageSquare, label: t('interview.question'), body: topic.interviewQuestion.question.slice(0, 60) + '…' },
   ];
+
+  const currentTabLabel = tabLabels[tabKeys.indexOf(tab)];
 
   return (
     <div>
@@ -42,7 +57,9 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
         actions={
           <>
             <span className="chip">{topic.level} · {t('unit.unit')} {topic.unit}{t('unit.of')}{topic.totalUnits}</span>
-            <Button variant="outline" size="md">{t('common.save')}</Button>
+            <Button variant="outline" size="md" onClick={handleSaveTopic}>
+              {topicSaved ? t('common.saved') : t('common.save')}
+            </Button>
             <Link to="/technical-english">
               <Button>{t('common.back')} <ArrowRight className="w-3.5 h-3.5" /></Button>
             </Link>
@@ -51,12 +68,15 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
       />
 
       <div className="panel">
-        <Tabs tabs={tabKeys} active={tab} onChange={setTab} />
+        <Tabs tabs={tabLabels} active={currentTabLabel} onChange={(label) => {
+          const idx = tabLabels.indexOf(label);
+          if (idx >= 0) setTab(tabKeys[idx]);
+        }} />
 
         <div className="px-6 py-3 border-b border-border bg-accent/40 flex items-center gap-2">
           <Target className="w-3.5 h-3.5 text-primary shrink-0" />
           <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('topic.learningOutcome')}</span>
-          <span className="text-sm text-foreground">{outcomes[tab] ?? ''}</span>
+          <span className="text-sm text-foreground">{t(outcomeKeys[tab] ?? '')}</span>
         </div>
 
         <div className="p-6">
@@ -67,24 +87,26 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
           {tab === "Interview" && <InterviewTab topic={topic} />}
         </div>
 
-        {/* Preview row */}
         <div className="border-t border-border bg-background/50 p-4">
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3 px-1">
             {t('topic.previewOtherTabs')}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            {previewItems.map((item) => (
-              <button
-                key={item.tabKey}
-                onClick={() => setTab(item.tabKey)}
-                className="panel p-3 text-left hover:border-primary/40 hover:shadow-sm transition"
-              >
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-primary font-semibold">
-                  <item.icon className="w-3 h-3" /> {t(`topic.tab${item.tabKey}`)}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.body}</p>
-              </button>
-            ))}
+            {previewItems.map((item) => {
+              const itemLabel = tabLabels[tabKeys.indexOf(item.tabKey)];
+              return (
+                <button
+                  key={item.tabKey}
+                  onClick={() => setTab(item.tabKey)}
+                  className="panel p-3 text-left hover:border-primary/40 hover:shadow-sm transition"
+                >
+                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-primary font-semibold">
+                    <item.icon className="w-3 h-3" /> {itemLabel}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.body}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

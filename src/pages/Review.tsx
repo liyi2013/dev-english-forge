@@ -4,16 +4,26 @@ import { PageHeader, Panel, Tabs, Button, Progress } from "@/components/ui-bits"
 import { EmptyState } from "@/components/common/EmptyState";
 import { WeakPointCard } from "@/components/common/WeakPointCard";
 import { useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { getReviewItems, getWeakPoints, getWeakTags } from "@/data/mockReviewItems";
-import { getSavedVocabulary, getSavedSentences, getCompletedReports } from "@/lib/mockStorage";
-import { Mic, Edit3, BookOpen, AlertCircle, TrendingDown, ArrowRight, Sparkles } from "lucide-react";
+import { getSavedVocabulary, getSavedSentences, getCompletedReports, updateReviewItemStatus } from "@/lib/mockStorage";
+import { Mic, Edit3, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 
-const tabs = ['review.wrongAnswers', 'review.vocabulary', 'review.savedSentences', 'review.interviewReports'];
+const tabKeys = ['review.wrongAnswers', 'review.vocabulary', 'review.savedSentences', 'review.interviewReports'];
 
 export default function Review() {
   const { t } = useI18n();
-  const [tab, setTab] = useState(tabs[0]);
+  const tabLabels = tabKeys.map((k) => t(k));
+  const [tab, setTabRaw] = useState(tabKeys[0]);
   const [sortBy, setSortBy] = useState<'newest' | 'weakest'>('newest');
+  const [expandedAnswers, setExpandedAnswers] = useState<Set<string>>(new Set());
+  const [vocabDone, setVocabDone] = useState<Set<string>>(new Set());
+  const [, forceUpdate] = useState(0);
+
+  const setTab = (label: string) => {
+    const idx = tabLabels.indexOf(label);
+    if (idx >= 0) setTabRaw(tabKeys[idx]);
+  };
 
   const reviewItems = getReviewItems();
   const weakPoints = getWeakPoints();
@@ -26,15 +36,44 @@ export default function Review() {
     ? [...reviewItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     : [...reviewItems].filter((i) => i.status === 'pending');
 
+  const handleToggleAnswer = (id: string) => {
+    setExpandedAnswers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleVocabDone = (term: string) => {
+    setVocabDone((prev) => {
+      const next = new Set(prev);
+      next.add(term);
+      return next;
+    });
+    toast.success(t('review.markedReviewed'));
+  };
+
+  const handleReviewDone = (id: string) => {
+    updateReviewItemStatus(id, 'reviewed');
+    forceUpdate((n) => n + 1);
+    toast.success(t('review.markedReviewed'));
+  };
+
   return (
     <div>
       <PageHeader title={t('review.title')} subtitle={t('review.desc')} />
 
-      {/* Weak Points Summary */}
       <Panel
         title={t('review.weakPointsSummary')}
         description={t('review.weakPointsDesc')}
-        action={<Button variant="ghost" size="sm">{t('common.viewAll')}</Button>}
+        action={
+          <Button variant="ghost" size="sm" onClick={() => {
+            document.querySelector('.space-y-4')?.scrollIntoView({ behavior: 'smooth' });
+          }}>
+            {t('common.viewAll')}
+          </Button>
+        }
         className="mb-6"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -45,22 +84,15 @@ export default function Review() {
       </Panel>
 
       <div className="panel mb-6">
-        <Tabs
-          tabs={tabs.map((k) => t(k))}
-          active={t(tab)}
-          onChange={(v) => {
-            const found = tabs.find((k) => t(k) === v);
-            if (found) setTab(found);
-          }}
-        />
+        <Tabs tabs={tabLabels} active={t(tab)} onChange={setTab} />
         <div className="px-5 py-2 text-xs text-muted-foreground flex items-center justify-between">
           <span>
-            {tab === tabs[0] && `${filteredItems.length} ${t('review.itemsQueued')} · ${t('common.sorted')} `}
-            {tab === tabs[1] && `${savedVocab.length} items`}
-            {tab === tabs[2] && `${savedSentences.length} items`}
-            {tab === tabs[3] && `${reports.length} reports`}
+            {tab === tabKeys[0] && `${filteredItems.length} ${t('review.itemsQueued')} · ${t('common.sorted')}`}
+            {tab === tabKeys[1] && `${savedVocab.length} ${t('review.items')}`}
+            {tab === tabKeys[2] && `${savedSentences.length} ${t('review.items')}`}
+            {tab === tabKeys[3] && `${reports.length} ${t('review.reports')}`}
           </span>
-          {tab === tabs[0] && (
+          {tab === tabKeys[0] && (
             <div className="flex gap-2">
               <button
                 className={`hover:text-foreground ${sortBy === 'newest' ? 'text-foreground font-medium' : ''}`}
@@ -82,8 +114,7 @@ export default function Review() {
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-4">
-          {/* Wrong Answers Tab */}
-          {tab === tabs[0] && (
+          {tab === tabKeys[0] && (
             filteredItems.length === 0 ? (
               <EmptyState
                 icon={<CheckCircle2 className="w-8 h-8" />}
@@ -97,9 +128,9 @@ export default function Review() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`chip-${item.status === 'pending' ? 'amber' : 'green'}`}>
+                        <span className={`${item.status === 'pending' ? 'chip-amber' : 'chip-green'}`}>
                           <AlertCircle className="w-3 h-3" />
-                          {item.status === 'pending' ? t('review.needsRework') : 'Reviewed'}
+                          {item.status === 'pending' ? t('review.needsRework') : t('review.reviewed')}
                         </span>
                         <span className="chip">{item.source}</span>
                         <span className="text-xs text-muted-foreground">{item.createdAt}</span>
@@ -127,28 +158,43 @@ export default function Review() {
                     )}
                   </div>
 
+                  {expandedAnswers.has(item.id) && item.correctAnswer && (
+                    <div className="mt-3 panel p-3 bg-accent/30 border-primary/20">
+                      <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
+                        {t('review.viewSuggestedAnswer')}
+                      </div>
+                      <p className="text-sm text-foreground">{item.correctAnswer}</p>
+                    </div>
+                  )}
+
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     {item.topicSlug ? (
                       <Link to={`/technical-english/${item.topicSlug}`}>
                         <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
                       </Link>
                     ) : (
-                      <Button onClick={() => {}}><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                      <Button onClick={() => toast.info(t('common.comingSoon'))}>
+                        <Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}
+                      </Button>
                     )}
                     <Link to="/ai-interview/room">
                       <Button variant="outline"><Mic className="w-3.5 h-3.5" /> {t('review.speakAgain')}</Button>
                     </Link>
                     {item.correctAnswer && (
-                      <Button variant="ghost"><BookOpen className="w-3.5 h-3.5" /> {t('review.viewSuggestedAnswer')}</Button>
+                      <Button variant="ghost" onClick={() => handleToggleAnswer(item.id)}>
+                        <BookOpen className="w-3.5 h-3.5" /> {t('review.viewSuggestedAnswer')}
+                      </Button>
                     )}
+                    <Button variant="ghost" size="sm" onClick={() => handleReviewDone(item.id)}>
+                      {t('common.done')}
+                    </Button>
                   </div>
                 </div>
               ))
             )
           )}
 
-          {/* Vocabulary Tab */}
-          {tab === tabs[1] && (
+          {tab === tabKeys[1] && (
             savedVocab.length === 0 ? (
               <EmptyState
                 icon={<BookOpen className="w-8 h-8" />}
@@ -157,20 +203,31 @@ export default function Review() {
                 action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
               />
             ) : (
-              savedVocab.map((v) => (
-                <div key={v.term} className="panel p-4 flex items-center justify-between">
-                  <div>
-                    <span className="font-mono font-medium text-sm">{v.term}</span>
-                    <span className="text-xs text-muted-foreground ml-3">Saved {new Date(v.savedAt).toLocaleDateString()}</span>
+              savedVocab.map((v) => {
+                const done = vocabDone.has(v.term);
+                return (
+                  <div key={v.term} className="panel p-4 flex items-center justify-between">
+                    <div>
+                      <span className="font-mono font-medium text-sm">{v.term}</span>
+                      <span className="text-xs text-muted-foreground ml-3">
+                        {t('common.saved')} {new Date(v.savedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleVocabDone(v.term)}
+                      disabled={done}
+                    >
+                      {done ? t('review.markedReviewed') : t('common.done')}
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm">{t('common.done')}</Button>
-                </div>
-              ))
+                );
+              })
             )
           )}
 
-          {/* Saved Sentences Tab */}
-          {tab === tabs[2] && (
+          {tab === tabKeys[2] && (
             savedSentences.length === 0 ? (
               <EmptyState
                 icon={<Edit3 className="w-8 h-8" />}
@@ -182,14 +239,15 @@ export default function Review() {
               savedSentences.map((s) => (
                 <div key={s.pattern} className="panel p-4">
                   <p className="text-sm font-mono font-medium">{s.pattern}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Saved {new Date(s.savedAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t('common.saved')} {new Date(s.savedAt).toLocaleDateString()}
+                  </p>
                 </div>
               ))
             )
           )}
 
-          {/* Interview Reports Tab */}
-          {tab === tabs[3] && (
+          {tab === tabKeys[3] && (
             reports.length === 0 ? (
               <EmptyState
                 icon={<Mic className="w-8 h-8" />}
@@ -202,7 +260,7 @@ export default function Review() {
                 <Link key={r.id} to="/ai-interview/report" className="panel p-4 flex items-center justify-between hover:border-primary/40 transition block">
                   <div>
                     <p className="text-sm font-medium">Mock Interview · {new Date(r.date).toLocaleDateString()}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Score: {r.overallScore}/100</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t('review.score')}: {r.overallScore}/100</p>
                   </div>
                   <span className={`font-mono text-sm font-semibold ${r.overallScore >= 70 ? 'text-success' : 'text-warning'}`}>
                     {r.overallScore}
@@ -220,13 +278,19 @@ export default function Review() {
               <span className="text-xs text-muted-foreground">{t('review.itemsFixed')}</span>
             </div>
             <Progress value={46} className="mt-3" tone="success" />
-            <p className="text-xs text-muted-foreground mt-3">Stay on track — fix 8 more this week to clear the queue.</p>
+            <p className="text-xs text-muted-foreground mt-3">{t('review.stayOnTrack')}</p>
           </Panel>
 
-          <Panel title={t('review.weakSkillTags')} description="Click to filter the review list">
+          <Panel title={t('review.weakSkillTags')} description={t('review.clickToFilter')}>
             <div className="flex flex-wrap gap-1.5">
-              {weakTags.map((t) => (
-                <span key={t} className="chip hover:bg-accent hover:text-accent-foreground cursor-pointer">{t}</span>
+              {weakTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="chip hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                  onClick={() => toast.info(t('review.filterComingSoon'))}
+                >
+                  {tag}
+                </span>
               ))}
             </div>
           </Panel>
@@ -237,7 +301,14 @@ export default function Review() {
               <li className="flex justify-between"><span>{t('review.dueTomorrow')}</span><span className="font-mono text-muted-foreground">7</span></li>
               <li className="flex justify-between"><span>{t('review.thisWeek')}</span><span className="font-mono text-muted-foreground">18</span></li>
             </ul>
-            <Button variant="outline" size="sm" className="mt-4 w-full">{t('review.startSession')}</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4 w-full"
+              onClick={() => toast.info(t('review.sessionComingSoon'))}
+            >
+              {t('review.startSession')}
+            </Button>
           </Panel>
         </div>
       </div>

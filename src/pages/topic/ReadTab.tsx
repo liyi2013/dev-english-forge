@@ -7,12 +7,15 @@ import { BookOpen, Volume2, Lightbulb, CheckCircle2 } from "lucide-react";
 
 export function ReadTab({ topic }: { topic: LearningTopic }) {
   const { t } = useI18n();
-  const completed = isLessonCompleted(topic.slug);
+  const [completed, setCompleted] = useState(() => isLessonCompleted(topic.slug));
   const [understandingAnswer, setUnderstandingAnswer] = useState("");
   const [understandingResult, setUnderstandingResult] = useState<boolean | null>(null);
 
   const handleMarkRead = () => {
-    if (!completed) markLessonCompleted(topic.slug);
+    if (!completed) {
+      markLessonCompleted(topic.slug);
+      setCompleted(true);
+    }
   };
 
   const handleCheckUnderstanding = () => {

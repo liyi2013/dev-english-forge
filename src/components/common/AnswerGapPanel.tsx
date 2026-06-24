@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 export function AnswerGapPanel({
   gapAnalysis,
@@ -7,14 +8,15 @@ export function AnswerGapPanel({
   gapAnalysis: string[];
   missingKeyPoints: string[];
 }) {
+  const { t } = useI18n();
+
   return (
     <div className="space-y-4">
-      {/* Gap Analysis */}
       <div className="panel p-4">
         <div className="flex items-center gap-2 mb-2">
           <AlertCircle className="w-3.5 h-3.5 text-warning" />
           <span className="text-[11px] uppercase tracking-wider text-warning font-semibold">
-            Gap Analysis
+            {t('report.gapAnalysis')}
           </span>
         </div>
         <ul className="text-sm space-y-1.5 text-foreground">
@@ -27,12 +29,11 @@ export function AnswerGapPanel({
         </ul>
       </div>
 
-      {/* Missing Key Points */}
       <div className="panel p-4">
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
           <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">
-            Missing Key Points
+            {t('report.missingKeyPoints')}
           </span>
         </div>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-1.5">

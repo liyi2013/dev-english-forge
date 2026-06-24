@@ -7,7 +7,7 @@ import { getMockTopics } from "@/data/mockTopics";
 import { getMockVocabulary } from "@/data/mockVocabulary";
 import { getQuestionsByMode } from "@/data/mockInterviewSessions";
 import { getMockReports } from "@/data/mockReports";
-import { getSavedSentences, getCompletedReports, saveVocabulary, isVocabSaved } from "@/lib/mockStorage";
+import { getSavedSentences, getCompletedReports, saveVocabulary, removeVocabulary, isVocabSaved } from "@/lib/mockStorage";
 import { toast } from "sonner";
 import { BookOpen, Sparkles, MessageSquare, Mic, ArrowRight, Search, TrendingUp } from "lucide-react";
 
@@ -22,6 +22,10 @@ export default function SearchResults() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const [filter, setFilter] = useState<FilterGroup>('All');
+  const [vocabSavedSet, setVocabSavedSet] = useState<Set<string>>(() => {
+    const all = getMockVocabulary().map((v) => v.term);
+    return new Set(all.filter((term) => isVocabSaved(term)));
+  });
 
   const topics = useMemo(() => {
     if (!q) return [];
@@ -89,11 +93,14 @@ export default function SearchResults() {
   const filters: FilterGroup[] = ['All', 'Topics', 'Vocabulary', 'Questions', 'Reports', 'Sentences'];
 
   const handleSaveVocab = (term: string) => {
-    if (!isVocabSaved(term)) {
-      saveVocabulary({ term, savedAt: new Date().toISOString() });
-      toast.success(`"${term}" saved to vocabulary`);
+    if (vocabSavedSet.has(term)) {
+      removeVocabulary(term);
+      setVocabSavedSet((prev) => { const next = new Set(prev); next.delete(term); return next; });
+      toast.info(`"${term}" removed`);
     } else {
-      toast.info('Already saved');
+      saveVocabulary({ term, savedAt: new Date().toISOString() });
+      setVocabSavedSet((prev) => { const next = new Set(prev); next.add(term); return next; });
+      toast.success(`"${term}" ${t('search.savedToVocab')}`);
     }
   };
 
@@ -133,22 +140,25 @@ export default function SearchResults() {
         subtitle={`${totals[filter]} ${t('search.resultsFor')} "${q}"`}
       />
 
-      <div className="panel p-3 mb-6 flex items-center gap-2">
-        <Search className="w-4 h-4 text-muted-foreground ml-1.5" />
-        <input
-          defaultValue={q}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") setParams({ q: (e.target as HTMLInputElement).value });
-          }}
-          className="flex-1 h-8 bg-transparent text-sm focus:outline-none"
-          placeholder={t('search.placeholder')}
-        />
-        <div className="flex gap-1">
+      {/* Mobile: stacked layout; Desktop: single row */}
+      <div className="panel p-3 mb-6 space-y-2 md:space-y-0 md:flex md:items-center md:gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto md:flex-1">
+          <Search className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
+          <input
+            defaultValue={q}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") setParams({ q: (e.target as HTMLInputElement).value });
+            }}
+            className="flex-1 h-8 bg-transparent text-sm focus:outline-none min-w-0"
+            placeholder={t('search.placeholder')}
+          />
+        </div>
+        <div className="flex gap-1 overflow-x-auto pb-1 md:pb-0 -mx-1 px-1 md:mx-0 md:px-0">
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`chip ${filter === f ? "bg-primary text-primary-foreground border-primary" : ""}`}
+              className={`chip whitespace-nowrap shrink-0 ${filter === f ? "bg-primary text-primary-foreground border-primary" : ""}`}
             >
               {f === 'All' ? t('search.groupAll') :
                f === 'Topics' ? t('search.topics') :
@@ -171,7 +181,7 @@ export default function SearchResults() {
       ) : (
         <div className="space-y-6">
           {(filter === 'All' || filter === 'Topics') && topics.length > 0 && (
-            <Panel title={t('search.topics')} description={`${topics.length} matching topics`} action={<span className="chip"><BookOpen className="w-3 h-3" /> Lessons</span>}>
+            <Panel title={t('search.topics')} description={`${topics.length} ${t('search.matchingTopics')}`} action={<span className="chip"><BookOpen className="w-3 h-3" /> {t('search.lessons')}</span>}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {topics.map((t) => (
                   <Link key={t.slug} to={`/technical-english/${t.slug}`} className="panel p-4 hover:border-primary/40 transition block">
@@ -185,25 +195,28 @@ export default function SearchResults() {
           )}
 
           {(filter === 'All' || filter === 'Vocabulary') && vocabItems.length > 0 && (
-            <Panel title={t('search.vocabulary')} description={`${vocabItems.length} matching terms`} action={<span className="chip"><Sparkles className="w-3 h-3" /> Terms</span>}>
+            <Panel title={t('search.vocabulary')} description={`${vocabItems.length} ${t('search.matchingTerms')}`} action={<span className="chip"><Sparkles className="w-3 h-3" /> {t('search.termsLabel')}</span>}>
               <ul className="divide-y divide-border -my-2">
-                {vocabItems.map((v) => (
-                  <li key={v.term} className="flex items-start justify-between py-3 gap-4">
-                    <div>
-                      <div className="text-sm font-mono font-medium"><Highlight text={v.term} q={q} /></div>
-                      <p className="text-xs text-muted-foreground mt-0.5"><Highlight text={v.definitionEn} q={q} /></p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => handleSaveVocab(v.term)}>
-                      {isVocabSaved(v.term) ? t('common.saved') : t('common.save')}
-                    </Button>
-                  </li>
-                ))}
+                {vocabItems.map((v) => {
+                  const saved = vocabSavedSet.has(v.term);
+                  return (
+                    <li key={v.term} className="flex items-start justify-between py-3 gap-4">
+                      <div>
+                        <div className="text-sm font-mono font-medium"><Highlight text={v.term} q={q} /></div>
+                        <p className="text-xs text-muted-foreground mt-0.5"><Highlight text={v.definitionEn} q={q} /></p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => handleSaveVocab(v.term)}>
+                        {saved ? t('common.saved') : t('common.save')}
+                      </Button>
+                    </li>
+                  );
+                })}
               </ul>
             </Panel>
           )}
 
           {(filter === 'All' || filter === 'Questions') && questionItems.length > 0 && (
-            <Panel title={t('search.questions')} description={`${questionItems.length} matching questions`} action={<span className="chip"><MessageSquare className="w-3 h-3" /> Q&A</span>}>
+            <Panel title={t('search.questions')} description={`${questionItems.length} ${t('search.matchingQuestions')}`} action={<span className="chip"><MessageSquare className="w-3 h-3" /> {t('search.qaLabel')}</span>}>
               <ul className="divide-y divide-border -my-2">
                 {questionItems.map((item, i) => (
                   <li key={i} className="flex items-start justify-between py-3 gap-4">
@@ -221,7 +234,7 @@ export default function SearchResults() {
           )}
 
           {(filter === 'All' || filter === 'Reports') && reportItems.length > 0 && (
-            <Panel title={t('search.reports')} description={`${reportItems.length} matching reports`} action={<span className="chip"><Mic className="w-3 h-3" /> Past sessions</span>}>
+            <Panel title={t('search.reports')} description={`${reportItems.length} ${t('search.matchingReports')}`} action={<span className="chip"><Mic className="w-3 h-3" /> {t('search.pastSessions')}</span>}>
               <ul className="divide-y divide-border -my-2">
                 {reportItems.map((r, i) => (
                   <li key={`${r.date}-${i}`} className="flex items-start justify-between py-3 gap-4">
@@ -239,7 +252,7 @@ export default function SearchResults() {
           )}
 
           {(filter === 'All' || filter === 'Sentences') && sentenceItems.length > 0 && (
-            <Panel title={t('search.sentences')} description={`${sentenceItems.length} matching sentences`} action={<span className="chip"><MessageSquare className="w-3 h-3" /> Saved</span>}>
+            <Panel title={t('search.sentences')} description={`${sentenceItems.length} ${t('search.matchingSentences')}`} action={<span className="chip"><MessageSquare className="w-3 h-3" /> {t('common.saved')}</span>}>
               <ul className="divide-y divide-border -my-2">
                 {sentenceItems.map((s) => (
                   <li key={s.pattern} className="flex items-start justify-between py-3 gap-4">
