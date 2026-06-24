@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getLearningPaths } from "@/data/mockLearningPaths";
 import { getMockTopics } from "@/data/mockTopics";
 import { ArrowRight, CheckCircle2, PlayCircle, Lock, Circle, Clock } from "lucide-react";
@@ -30,6 +30,7 @@ function pathProgress(modules: { status: string; progress?: number }[]) {
 }
 
 export default function Learning() {
+  const { t } = useI18n();
   const paths = getLearningPaths();
   const topics = getMockTopics();
 

@@ -1,10 +1,11 @@
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getProfile, getCoreSkills, getDomainSkills, getActivities } from "@/data/mockProfile";
 
 export default function Profile() {
+  const { t } = useI18n();
   const profile = getProfile();
   const coreSkills = getCoreSkills();
   const domainSkills = getDomainSkills();

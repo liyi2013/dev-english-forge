@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { ArrowRight, MessageSquareCode, Mic, Clock } from "lucide-react";
 
 const scenarios = [
@@ -19,6 +19,7 @@ const banks = [
 ];
 
 export default function InterviewEnglish() {
+  const { t } = useI18n();
   return (
     <div>
       <PageHeader

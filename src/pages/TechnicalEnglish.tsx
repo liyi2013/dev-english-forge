@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { TopicCard } from "@/components/common/TopicCard";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getMockTopics } from "@/data/mockTopics";
 import { getCoreSkills } from "@/data/mockProfile";
 import { ArrowRight, BookOpen, Mic, MessageSquare, Sparkles } from "lucide-react";
@@ -21,6 +21,7 @@ const paths = [
 
 export default function TechnicalEnglish() {
   const topics = getMockTopics();
+  const { t } = useI18n();
   const skills = getCoreSkills();
 
   return (

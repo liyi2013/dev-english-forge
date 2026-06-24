@@ -220,3 +220,5 @@ export function getReports() {
 export function getLatestReport(): InterviewReport {
   return mockReports[0];
 }
+
+export function getMockReports() { return mockReports; }

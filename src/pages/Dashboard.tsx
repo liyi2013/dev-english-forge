@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Panel, Progress, Button, Stat } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getDashboardData } from "@/data/mockDashboard";
 import { Check, Flame, TrendingUp, Calendar, ArrowRight, Target, Mic } from "lucide-react";
 
 export default function Dashboard() {
+  const { t } = useI18n();
   const data = getDashboardData();
 
   function formatToday() {

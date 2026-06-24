@@ -1,5 +1,5 @@
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { toast } from "sonner";
 import { Mail, Users, GitPullRequest, MessageCircle, ArrowRight } from "lucide-react";
 
@@ -18,6 +18,7 @@ const phrases = [
 ];
 
 export default function WorkplaceEnglish() {
+  const { t } = useI18n();
   return (
     <div>
       <PageHeader title={t('workplace.title')} subtitle={t('workplace.desc')} />

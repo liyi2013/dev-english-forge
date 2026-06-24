@@ -3,7 +3,7 @@ import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { AnswerGapPanel } from "@/components/common/AnswerGapPanel";
 import { RecommendedLearningCard } from "@/components/common/RecommendedLearningCard";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { addToReviewQueue, addReport } from "@/lib/mockStorage";
 import { getLatestReport } from "@/data/mockReports";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 export default function InterviewReport() {
+  const { t } = useI18n();
   const report = getLatestReport();
 
   const handleAddToReview = () => {

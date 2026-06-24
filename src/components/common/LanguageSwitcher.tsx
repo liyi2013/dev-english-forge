@@ -1,14 +1,11 @@
 import { Languages } from "lucide-react";
-import { getLocale, setLocale, type Locale } from "@/i18n";
-import { useState } from "react";
+import { useI18n } from "@/i18n";
 
 export function LanguageSwitcher() {
-  const [locale, setLocaleState] = useState<Locale>(getLocale());
+  const { locale, setLocale } = useI18n();
 
   const toggle = () => {
-    const next: Locale = locale === 'zh-CN' ? 'en-US' : 'zh-CN';
-    setLocale(next);
-    setLocaleState(next);
+    setLocale(locale === 'zh-CN' ? 'en-US' : 'zh-CN');
   };
 
   return (

@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Panel, Button, Progress } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getQuestionsByMode } from "@/data/mockInterviewSessions";
 import { getInterviewConfig, setInterviewProgress, clearInterviewProgress } from "@/lib/mockStorage";
 import { Mic, Square, ChevronLeft, ChevronRight, X, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function InterviewRoom() {
+  const { t } = useI18n();
   const config = getInterviewConfig();
   const questions = config ? getQuestionsByMode(config.mode) : [];
   const questionCount = config?.questionCount ?? 5;

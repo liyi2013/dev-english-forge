@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { t, onLocaleChange } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
 const navItems = [
@@ -30,13 +30,7 @@ const navItems = [
   { to: "/profile", labelKey: "nav.profile", icon: User },
 ];
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    return onLocaleChange(() => setTick((t) => t + 1));
-  }, []);
-
+function SidebarContent({ onNavigate, t }: { onNavigate?: () => void; t: (k: string) => string }) {
   return (
     <>
       <div className="h-14 flex items-center gap-2 px-5 border-b border-border">
@@ -90,13 +84,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const current = navItems.find((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to))) ?? navItems[0];
   const [query, setQuery] = useState("");
-  const [, setTick] = useState(0);
 
-  useEffect(() => {
-    return onLocaleChange(() => setTick((t) => t + 1));
-  }, []);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/search?q=${encodeURIComponent(query || "cache")}`);
+  };
 
   return (
     <header className="h-14 shrink-0 border-b border-border bg-card flex items-center justify-between px-4 md:px-6 gap-3">
@@ -115,13 +110,8 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            navigate(`/search?q=${encodeURIComponent(query || "cache")}`);
-          }}
-          className="relative hidden md:block"
-        >
+        {/* Desktop search */}
+        <form onSubmit={handleSearch} className="relative hidden md:block">
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
@@ -130,6 +120,14 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
             className="h-8 w-72 pl-8 pr-3 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring"
           />
         </form>
+        {/* Mobile search icon */}
+        <button
+          onClick={() => navigate('/search')}
+          className="md:hidden h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+          aria-label={t('common.search')}
+        >
+          <Search className="w-4 h-4" />
+        </button>
         <LanguageSwitcher />
         <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary">
           <Bell className="w-4 h-4" />
@@ -144,15 +142,14 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
 
 export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useI18n();
 
   return (
     <div className="h-screen flex bg-background text-foreground">
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-60 shrink-0 border-r border-border bg-sidebar flex-col">
-        <SidebarContent />
+        <SidebarContent t={t} />
       </aside>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-foreground/30" onClick={() => setMobileOpen(false)} />
@@ -164,7 +161,7 @@ export default function AppLayout() {
             >
               <X className="w-4 h-4" />
             </button>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} />
+            <SidebarContent t={t} onNavigate={() => setMobileOpen(false)} />
           </aside>
         </div>
       )}
@@ -178,7 +175,6 @@ export default function AppLayout() {
         </main>
       </div>
 
-      {/* Mobile bottom navigation */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 h-14 bg-card border-t border-border flex items-stretch justify-around px-1">
         {[navItems[0], navItems[1], navItems[5], navItems[6], navItems[7]].map((item) => (
           <NavLink

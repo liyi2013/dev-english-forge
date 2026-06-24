@@ -1,5 +1,4 @@
 const enUS: Record<string, string> = {
-  // Navigation
   'nav.dashboard': 'Dashboard',
   'nav.learning': 'Learning',
   'nav.technical': 'Technical English',
@@ -11,7 +10,6 @@ const enUS: Record<string, string> = {
   'nav.workspace': 'Workspace',
   'nav.home': 'Home',
 
-  // Common
   'common.save': 'Save',
   'common.saved': 'Saved',
   'common.start': 'Start',
@@ -27,8 +25,15 @@ const enUS: Record<string, string> = {
   'common.loading': 'Loading…',
   'common.noResults': 'No results',
   'common.comingSoon': 'Coming soon',
+  'common.sorted': 'sorted',
+  'common.clear': 'Clear',
+  'common.open': 'Open',
+  'common.practice': 'Practice',
+  'common.reset': 'Reset',
+  'common.completed': 'Completed',
+  'common.record': 'Record',
+  'common.evaluate': 'Evaluate',
 
-  // Dashboard
   'dash.today': "Today's Learning",
   'dash.todayFocus': "Today's Focus",
   'dash.continueLearning': 'Continue Learning',
@@ -46,15 +51,12 @@ const enUS: Record<string, string> = {
   'dash.minutes': 'min',
   'dash.startFocus': 'Start focus',
 
-  // Learning
   'learning.center': 'Learning Center',
   'learning.desc': 'Structured paths with modules and milestones. Pick a path and work module by module.',
   'learning.continue': 'Continue Learning',
   'learning.recommended': 'Recommended Today',
   'learning.allPaths': 'All paths →',
-  'learning.modules': 'modules',
 
-  // Technical English
   'tech.title': 'Technical English',
   'tech.desc': 'Each topic teaches you what to say — not how to code. Practice explaining the technology in real English.',
   'tech.learnToExplain': "You'll learn to explain",
@@ -64,7 +66,6 @@ const enUS: Record<string, string> = {
   'tech.nextMilestone': 'Next milestone',
   'tech.viewPlan': 'View plan',
 
-  // Interview English
   'interview.title': 'Interview English',
   'interview.desc': 'Self-introduction, project experience, and technical Q&A — practiced in interview English.',
   'interview.startMock': 'Start mock interview',
@@ -75,7 +76,6 @@ const enUS: Record<string, string> = {
   'interview.lastPractice': 'Last Practice',
   'interview.seeExamples': 'See examples',
 
-  // Workplace English
   'workplace.title': 'Workplace English',
   'workplace.desc': 'Emails, meetings, code review, daily collaboration — the English you use after you get hired.',
   'workplace.continue': 'Continue Learning',
@@ -85,7 +85,6 @@ const enUS: Record<string, string> = {
   'workplace.toneGuide': 'Tone Guide',
   'workplace.savePhrase': 'Save phrase',
 
-  // AI Interview
   'ai.title': 'AI Interview',
   'ai.desc': 'Practice interviews with voice answers and structured feedback. Choose a mode, configure, and start.',
   'ai.quickPractice': 'Quick Practice',
@@ -122,7 +121,6 @@ const enUS: Record<string, string> = {
   'ai.detectedKeywords': 'Detected Keywords',
   'ai.missingPoints': 'Missing Points',
 
-  // Interview Report
   'report.title': 'Interview Report',
   'report.overallScore': 'Overall Score',
   'report.strongPoints': 'Strong Points',
@@ -143,7 +141,6 @@ const enUS: Record<string, string> = {
   'report.exportPdf': 'Export PDF',
   'report.newSession': 'New Session',
 
-  // Topic Detail
   'topic.tabRead': 'Read',
   'topic.tabVocabulary': 'Vocabulary',
   'topic.tabSentence': 'Sentence',
@@ -170,10 +167,13 @@ const enUS: Record<string, string> = {
   'topic.mockEvaluation': 'Mock Evaluation',
   'topic.idealAnswer': 'Ideal Answer',
   'topic.evaluate': 'Evaluate',
-  'topic.savedVocab': 'Saved Vocabulary',
-  'topic.savedSentences': 'Saved Sentences',
+  'topic.keyPointsLabel': 'Key Points',
+  'topic.commonMistakes': 'Common Mistakes',
+  'topic.fluency': 'Fluency',
+  'topic.clarity': 'Clarity',
+  'topic.practiceAgain': 'Practice Again',
+  'topic.mockEvaluationLabel': 'Mock Evaluation',
 
-  // Review
   'review.title': 'Review',
   'review.desc': 'Close the learning loop. Fix what you got wrong, lock in what you have learned.',
   'review.wrongAnswers': 'Wrong Answers',
@@ -211,8 +211,9 @@ const enUS: Record<string, string> = {
   'review.newest': 'Newest',
   'review.weakest': 'Weakest',
   'review.itemsQueued': 'items queued',
+  'review.allCaughtUp': 'All caught up!',
+  'review.allCaughtUpDesc': 'No pending review items. Great work!',
 
-  // Profile
   'profile.title': 'Profile',
   'profile.desc': 'Your learning identity, skill profile, and preferences.',
   'profile.editProfile': 'Edit profile',
@@ -231,7 +232,6 @@ const enUS: Record<string, string> = {
   'profile.mockInterviews': 'Mock Interviews',
   'profile.wordsMastered': 'Words Mastered',
 
-  // Search
   'search.title': 'Search results',
   'search.resultsFor': 'results',
   'search.placeholder': 'Search topics, vocabulary, interview questions…',
@@ -244,6 +244,8 @@ const enUS: Record<string, string> = {
   'search.emptyState': 'No results found',
   'search.emptyStateDesc': 'Try different keywords or browse the Learning Center.',
   'search.browseLearning': 'Browse Learning Center',
+  'search.popularSearches': 'Popular searches',
+  'search.searchHint': 'Enter a keyword above to search across all learning content.',
 
   'sentence.pattern': 'Sentence pattern',
   'vocab.term': 'Term',

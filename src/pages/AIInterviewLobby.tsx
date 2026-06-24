@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Button } from "@/components/ui-bits";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { setInterviewConfig } from "@/lib/mockStorage";
 import { Zap, FileText, ClipboardList, ChevronDown, Play } from "lucide-react";
 import { useState } from "react";
@@ -35,6 +35,7 @@ function Select({ value, options }: { value: string; options: string[] }) {
 }
 
 export default function AIInterviewLobby() {
+  const { t } = useI18n();
   const [selected, setSelected] = useState("quick");
   const [role, setRole] = useState("Backend Developer");
   const [difficulty, setDifficulty] = useState("Mid-level");

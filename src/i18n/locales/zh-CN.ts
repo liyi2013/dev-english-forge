@@ -1,5 +1,4 @@
 const zhCN: Record<string, string> = {
-  // Navigation
   'nav.dashboard': '今日学习',
   'nav.learning': '学习中心',
   'nav.technical': '技术英语',
@@ -11,7 +10,6 @@ const zhCN: Record<string, string> = {
   'nav.workspace': '工作区',
   'nav.home': '首页',
 
-  // Common
   'common.save': '收藏',
   'common.saved': '已收藏',
   'common.start': '开始',
@@ -27,8 +25,15 @@ const zhCN: Record<string, string> = {
   'common.loading': '加载中…',
   'common.noResults': '暂无结果',
   'common.comingSoon': '即将推出',
+  'common.sorted': '排序',
+  'common.clear': '清空',
+  'common.open': '打开',
+  'common.practice': '练习',
+  'common.reset': '重置',
+  'common.completed': '已完成',
+  'common.record': '录制',
+  'common.evaluate': '评估',
 
-  // Dashboard
   'dash.today': '今日学习',
   'dash.todayFocus': '今日重点',
   'dash.continueLearning': '继续学习',
@@ -46,15 +51,12 @@ const zhCN: Record<string, string> = {
   'dash.minutes': '分钟',
   'dash.startFocus': '开始专注',
 
-  // Learning
   'learning.center': '学习中心',
   'learning.desc': '结构化学习路径，按模块循序渐进。选择一个路径，逐个模块攻克。',
   'learning.continue': '继续学习',
   'learning.recommended': '今日推荐',
   'learning.allPaths': '全部路径 →',
-  'learning.modules': '个模块',
 
-  // Technical English
   'tech.title': '技术英语',
   'tech.desc': '每个主题教你如何用英语表达 —— 而不是如何写代码。练习用真正的英语解释技术概念。',
   'tech.learnToExplain': '你将学会用英语解释',
@@ -64,7 +66,6 @@ const zhCN: Record<string, string> = {
   'tech.nextMilestone': '下一个里程碑',
   'tech.viewPlan': '查看计划',
 
-  // Interview English
   'interview.title': '面试英语',
   'interview.desc': '自我介绍、项目经验、技术问答 —— 练的是面试英语，不是课本英语。',
   'interview.startMock': '开始模拟面试',
@@ -75,7 +76,6 @@ const zhCN: Record<string, string> = {
   'interview.lastPractice': '上次练习',
   'interview.seeExamples': '查看示例',
 
-  // Workplace English
   'workplace.title': '职场英语',
   'workplace.desc': '邮件、会议、代码评审、日常协作 —— 入职后要用的英语。',
   'workplace.continue': '继续学习',
@@ -85,7 +85,6 @@ const zhCN: Record<string, string> = {
   'workplace.toneGuide': '语气指南',
   'workplace.savePhrase': '收藏短语',
 
-  // AI Interview
   'ai.title': 'AI 模拟面试',
   'ai.desc': '语音回答 + 结构化反馈。选择模式、配置、开始。',
   'ai.quickPractice': '快速练习',
@@ -122,7 +121,6 @@ const zhCN: Record<string, string> = {
   'ai.detectedKeywords': '检测到的关键词',
   'ai.missingPoints': '遗漏要点',
 
-  // Interview Report
   'report.title': '面试报告',
   'report.overallScore': '综合评分',
   'report.strongPoints': '优点',
@@ -143,7 +141,6 @@ const zhCN: Record<string, string> = {
   'report.exportPdf': '导出 PDF',
   'report.newSession': '新面试',
 
-  // Topic Detail
   'topic.tabRead': '阅读',
   'topic.tabVocabulary': '词汇',
   'topic.tabSentence': '句型',
@@ -170,10 +167,13 @@ const zhCN: Record<string, string> = {
   'topic.mockEvaluation': '模拟评估',
   'topic.idealAnswer': '参考答案',
   'topic.evaluate': '评估回答',
-  'topic.savedVocab': '已收藏的词汇',
-  'topic.savedSentences': '已收藏的句型',
+  'topic.keyPointsLabel': '关键要点',
+  'topic.commonMistakes': '常见错误',
+  'topic.fluency': '流利度',
+  'topic.clarity': '清晰度',
+  'topic.practiceAgain': '再练一次',
+  'topic.mockEvaluationLabel': '模拟评估',
 
-  // Review
   'review.title': '复盘',
   'review.desc': '闭合学习闭环。修复错误，巩固所学。',
   'review.wrongAnswers': '错题',
@@ -211,8 +211,9 @@ const zhCN: Record<string, string> = {
   'review.newest': '最新',
   'review.weakest': '最弱',
   'review.itemsQueued': '个项目待复习',
+  'review.allCaughtUp': '全部完成！',
+  'review.allCaughtUpDesc': '没有待复习的项目。做得好！',
 
-  // Profile
   'profile.title': '个人中心',
   'profile.desc': '你的学习身份、技能画像和偏好设置。',
   'profile.editProfile': '编辑资料',
@@ -231,7 +232,6 @@ const zhCN: Record<string, string> = {
   'profile.mockInterviews': '模拟面试',
   'profile.wordsMastered': '掌握单词',
 
-  // Search
   'search.title': '搜索结果',
   'search.resultsFor': '个结果',
   'search.placeholder': '搜索主题、词汇、面试问题…',
@@ -244,14 +244,14 @@ const zhCN: Record<string, string> = {
   'search.emptyState': '没有找到匹配的结果',
   'search.emptyStateDesc': '尝试其他关键词，或浏览学习中心。',
   'search.browseLearning': '浏览学习中心',
+  'search.popularSearches': '热门搜索',
+  'search.searchHint': '输入关键词搜索所有学习内容',
 
-  // Sentense pattern type
   'sentence.pattern': '句型',
   'vocab.term': '词汇',
   'speak.prompt': '口语提示',
   'interview.question': '面试问题',
 
-  // Unit
   'unit.unit': '单元',
   'unit.of': ' / ',
 };

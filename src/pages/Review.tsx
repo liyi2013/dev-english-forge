@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { PageHeader, Panel, Tabs, Button, Progress } from "@/components/ui-bits";
 import { EmptyState } from "@/components/common/EmptyState";
 import { WeakPointCard } from "@/components/common/WeakPointCard";
-import { t } from "@/i18n";
+import { useI18n } from "@/i18n";
 import { getReviewItems, getWeakPoints, getWeakTags } from "@/data/mockReviewItems";
 import { getSavedVocabulary, getSavedSentences, getCompletedReports } from "@/lib/mockStorage";
 import { Mic, Edit3, BookOpen, AlertCircle, TrendingDown, ArrowRight, Sparkles } from "lucide-react";
@@ -11,6 +11,7 @@ import { Mic, Edit3, BookOpen, AlertCircle, TrendingDown, ArrowRight, Sparkles }
 const tabs = ['review.wrongAnswers', 'review.vocabulary', 'review.savedSentences', 'review.interviewReports'];
 
 export default function Review() {
+  const { t } = useI18n();
   const [tab, setTab] = useState(tabs[0]);
   const [sortBy, setSortBy] = useState<'newest' | 'weakest'>('newest');
 
@@ -86,8 +87,8 @@ export default function Review() {
             filteredItems.length === 0 ? (
               <EmptyState
                 icon={<CheckCircle2 className="w-8 h-8" />}
-                title="All caught up!"
-                description="No pending review items. Great work!"
+                title={t('review.allCaughtUp')}
+                description={t('review.allCaughtUpDesc')}
                 action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
               />
             ) : (
