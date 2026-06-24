@@ -24,38 +24,42 @@ export default function InterviewReport() {
       return;
     }
 
-    // Check if already exists
     const existingReports = getCompletedReports();
     const existingQueue = getReviewQueue();
+    const source = `Interview · ${report.config.role}`;
+
     const reportExists = existingReports.some((r) => r.id === report.id);
-    const weakPointsExist = report.weakPoints.every((wp) =>
-      existingQueue.some((q) => q.title === wp)
+
+    const missingWeakPoints = report.weakPoints.filter((wp) =>
+      !existingQueue.some((q) => q.title === wp && q.source === source)
     );
 
-    if (reportExists && weakPointsExist) {
+    if (reportExists && missingWeakPoints.length === 0) {
       setAdded(true);
       toast.info(t('report.alreadyAddedToReview'));
       return;
     }
 
-    // Add weak points to review queue
-    report.weakPoints.forEach((wp) => {
+    // Add only missing weak points
+    missingWeakPoints.forEach((wp) => {
       addToReviewQueue({
         id: `review-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: 'wrong_answer',
         title: wp,
-        source: `Interview · ${report.config.role}`,
+        source,
         status: 'pending',
         createdAt: new Date().toISOString(),
       });
     });
 
-    // Add report
-    addReport({
-      id: report.id,
-      date: report.date,
-      overallScore: report.overallScore,
-    });
+    // Only add report if it does not already exist
+    if (!reportExists) {
+      addReport({
+        id: report.id,
+        date: report.date,
+        overallScore: report.overallScore,
+      });
+    }
 
     setAdded(true);
     toast.success(t('report.addedToReviewQueue'));

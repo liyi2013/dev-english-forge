@@ -68,7 +68,12 @@ export default function SearchResults() {
         title: `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`,
       })),
     ];
-    return all.filter((r) =>
+    // Deduplicate by id
+    const byId = new Map<string, (typeof all)[number]>();
+    all.forEach((item) => {
+      if (!byId.has(item.id)) byId.set(item.id, item);
+    });
+    return Array.from(byId.values()).filter((r) =>
       r.title.toLowerCase().includes(q.toLowerCase()) ||
       String(r.overallScore).includes(q)
     );
