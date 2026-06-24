@@ -336,5 +336,7 @@ const zhCN: Record<string, string> = {
 
 
 
+  'nav.streak': '12 天连续学习',
+  'nav.streakHint': '继续保持，今天已学习 8 分钟。',
 };
 export default zhCN;

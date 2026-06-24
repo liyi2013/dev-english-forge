@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { PageHeader, Panel, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { AnswerGapPanel } from "@/components/common/AnswerGapPanel";
@@ -18,7 +18,6 @@ import type { InterviewReport as InterviewReportType } from "@/types/interview";
 export default function InterviewReport() {
   const { t } = useI18n();
   const { reportId } = useParams<{ reportId?: string }>();
-  const navigate = useNavigate();
 
   const report = useMemo<InterviewReportType | undefined>(() => {
     if (reportId) {

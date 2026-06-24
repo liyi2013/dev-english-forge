@@ -18,7 +18,7 @@ const popularSearches = [
 ];
 
 export default function SearchResults() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const [filter, setFilter] = useState<FilterGroup>('All');

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { I18nProvider } from "@/i18n";
 import InterviewReport from "@/pages/InterviewReport";
 import TechnicalEnglish from "@/pages/TechnicalEnglish";
@@ -9,6 +9,8 @@ import WorkplaceEnglish from "@/pages/WorkplaceEnglish";
 import Learning from "@/pages/Learning";
 import Dashboard from "@/pages/Dashboard";
 import InterviewEnglish from "@/pages/InterviewEnglish";
+import SearchResults from "@/pages/SearchResults";
+import AppLayout from "@/components/AppLayout";
 import AIInterviewLobby from "@/pages/AIInterviewLobby";
 import Review from "@/pages/Review";
 import { SpeakTab } from "@/pages/topic/SpeakTab";
@@ -128,8 +130,7 @@ describe("Button clickability — full audit", () => {
     it("Speak again link points to /ai-interview lobby", async () => {
       localStorage.setItem("devenglish_reviewed_mock_item_ids", JSON.stringify([]));
       localStorage.setItem("devenglish_review_queue", JSON.stringify([]));
-      const { container } = renderWP(<Review />);
-      // Debug: print all link texts
+      renderWP(<Review />);
       const links = screen.getAllByRole("link");
       // Check for "再说一遍" in DOM
       const speakAgainTexts = links.filter(l => (l.textContent || "").includes("再说一遍"));
@@ -239,6 +240,101 @@ describe("Button clickability — full audit", () => {
         expect(href).toMatch(/^\/technical-english\//);
         expect(href).not.toBe("#");
       });
+    });
+  });
+
+  // =========== AppLayout search & notifications ===========
+  describe("AppLayout", () => {
+    it("search form navigates to /search?q=...", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/"]}>
+            <Routes>
+              <Route path="/" element={<AppLayout />} />
+              <Route path="/search" element={<div data-testid="search-page" />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Find the input and submit a search
+      const input = screen.getByPlaceholderText(/搜索|Search/i);
+      expect(input).toBeDefined();
+      fireEvent.change(input, { target: { value: "Redis" } });
+      fireEvent.submit(input.closest("form")!);
+      // After submit, the search page element should appear
+      expect(screen.getByTestId("search-page")).toBeDefined();
+    });
+
+    it("notification bell calls toast.info", () => {
+      renderWP(<AppLayout />);
+      // The bell button is the one directly inside TopHeader with onClick handler
+      // Find it by looking for buttons that are not the language switcher (has text)
+      // and not the mobile search icon
+      const buttons = screen.getAllByRole("button");
+      // Exclude buttons with visible text (LanguageSwitcher shows "EN")
+      const textButtons = buttons.filter(b => (b.textContent || "").trim().length > 0);
+      const noTextButtons = buttons.filter(b => (b.textContent || "").trim().length === 0);
+      // There should be at least one button with only SVG content (the bell)
+      expect(noTextButtons.length).toBeGreaterThanOrEqual(1);
+      // Click each no-text button until toast.info is called
+      for (const btn of noTextButtons) {
+        fireEvent.click(btn);
+      }
+      expect(vi.mocked(toast.info)).toHaveBeenCalled();
+    });
+  });
+
+  // =========== LanguageSwitcher ===========
+  describe("LanguageSwitcher", () => {
+    it("toggles locale and persists to localStorage", () => {
+      renderWP(<AppLayout />);
+      // Find the language switch button (shows "EN" when locale is zh-CN)
+      const langBtn = screen.getByText("EN");
+      expect(langBtn).toBeDefined();
+      fireEvent.click(langBtn);
+      // After clicking, button should show 中文
+      expect(screen.getByText("中文")).toBeDefined();
+      const stored = localStorage.getItem("devenglish_locale");
+      expect(stored).toBe("en-US");
+    });
+  });
+
+  // =========== SearchResults ===========
+  describe("SearchResults", () => {
+    it("renders without crash with search query", () => {
+      expect(() => {
+        render(
+          <I18nProvider>
+            <MemoryRouter initialEntries={["/search?q=latency"]}>
+              <SearchResults />
+            </MemoryRouter>
+          </I18nProvider>
+        );
+      }).not.toThrow();
+    });
+
+    it("vocab save button writes to localStorage", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/search?q=latency"]}>
+            <SearchResults />
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Wait for the component to render content
+      await waitFor(() => {
+        // Check for the input field (search box)
+        expect(screen.getByPlaceholderText(/搜索|search/i)).toBeDefined();
+      });
+      // Find save buttons that say "收藏"
+      const saveBtns = screen.getAllByRole("button").filter(b => b.textContent?.trim() === "收藏");
+      expect(saveBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(saveBtns[0]);
+      const stored = localStorage.getItem("devenglish_vocab");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed[0].term).toContain("latency");
     });
   });
 

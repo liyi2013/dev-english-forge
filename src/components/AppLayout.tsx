@@ -73,9 +73,9 @@ function SidebarContent({ onNavigate, t }: { onNavigate?: () => void; t: (k: str
         <div className="panel p-3 bg-accent border-transparent">
           <div className="flex items-center gap-2 text-xs font-medium text-accent-foreground">
             <Flame className="w-3.5 h-3.5" />
-            12-day streak
+            {t('nav.streak')}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">Keep it going. 8 mins today.</p>
+          <p className="text-[11px] text-muted-foreground mt-1">{t('nav.streakHint')}</p>
         </div>
       </div>
     </>
