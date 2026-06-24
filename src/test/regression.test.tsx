@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { I18nProvider } from "@/i18n";
 import SearchResults from "@/pages/SearchResults";
 import Dashboard from "@/pages/Dashboard";
+import AIInterviewLobby from "@/pages/AIInterviewLobby";
 import { toast } from "sonner";
 
 vi.mock("sonner", () => ({
@@ -317,5 +318,131 @@ describe("Dashboard today plan button regression", () => {
     });
 
     expect(vi.mocked(toast.success)).toHaveBeenCalledTimes(2);
+  });
+});
+
+// =========== 4. AIInterviewLobby i18n regression ===========
+describe("AIInterviewLobby i18n regression", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("displays Chinese labels for all select options, not English hardcoded", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Chinese labels that should appear
+    const chineseLabels = [
+      "后端开发",
+      "前端开发",
+      "全栈开发",
+      "数据工程师",
+      "DevOps 工程师",
+      "初级",
+      "中级",
+      "高级",
+      "专家级",
+      "英文",
+      "英文慢速",
+      "双语提示",
+      "综合",
+      "行为面试",
+      "技术面试",
+      "系统设计",
+      "15 分钟",
+      "30 分钟",
+      "45 分钟",
+      "60 分钟",
+    ];
+
+    // These appear in <option> elements, exact match works
+    for (const label of chineseLabels) {
+      expect(screen.getByText(label)).toBeDefined();
+    }
+
+    // "语音回答" appears in multiple places (subtitle, summary), use getAllByText
+    expect(screen.getAllByText(/语音回答/).length).toBeGreaterThanOrEqual(1);
+
+    // English hardcoded strings that should NOT appear
+    const englishLabels = [
+      "Backend Developer",
+      "Mid-level",
+      "Bilingual hints",
+      "Voice answers",
+    ];
+
+    for (const label of englishLabels) {
+      expect(screen.queryByText(label)).toBeNull();
+    }
+  });
+
+  it("stores stable English values in localStorage after starting interview", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    const startBtn = screen.getByText("开始面试");
+    fireEvent.click(startBtn);
+
+    const config = JSON.parse(memLS.getItem("devenglish_interview_config") || "{}");
+    expect(config.role).toBe("Backend Developer");
+    expect(config.difficulty).toBe("Mid-level");
+    expect(config.language).toBe("English");
+    expect(config.interviewType).toBe("Mixed");
+    expect(config.duration).toBe("30 minutes");
+    expect(config.mode).toBe("quick");
+    expect(config.questionCount).toBe(10);
+  });
+
+  it("displays Chinese recent session names and dates", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Chinese labels for recent sessions
+    expect(screen.getByText("后端 · 中级")).toBeDefined();
+    expect(screen.getByText("系统设计 · 中级")).toBeDefined();
+    expect(screen.getByText("行为面试 · 初级")).toBeDefined();
+    expect(screen.getByText("6月21日")).toBeDefined();
+    expect(screen.getByText("6月18日")).toBeDefined();
+    expect(screen.getByText("6月15日")).toBeDefined();
+
+    // English should not appear
+    expect(screen.queryByText("Backend · Mid")).toBeNull();
+    expect(screen.queryByText("Jun 21")).toBeNull();
+  });
+
+  it("bottom summary shows translated duration and voice answers", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // "30 分钟" and "语音回答" appear in multiple places (options + summary),
+    // so use getAllByText and assert at least one match.
+    expect(screen.getAllByText(/30 分钟/).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/语音回答/).length).toBeGreaterThanOrEqual(1);
+    // Should NOT show raw English
+    expect(screen.queryByText("Voice answers")).toBeNull();
+    expect(screen.queryByText("30 minutes")).toBeNull();
   });
 });

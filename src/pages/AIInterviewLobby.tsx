@@ -11,6 +11,48 @@ const modes = [
   { id: "full", icon: ClipboardList, nameKey: "ai.fullMock", descKey: "ai.fullDesc" },
 ];
 
+
+const roleOptions = [
+  { value: "Backend Developer", labelKey: "ai.roleBackend" },
+  { value: "Frontend Developer", labelKey: "ai.roleFrontend" },
+  { value: "Full-Stack", labelKey: "ai.roleFullStack" },
+  { value: "Data Engineer", labelKey: "ai.roleDataEngineer" },
+  { value: "DevOps", labelKey: "ai.roleDevOps" },
+];
+
+const difficultyOptions = [
+  { value: "Junior", labelKey: "ai.difficultyJunior" },
+  { value: "Mid-level", labelKey: "ai.difficultyMid" },
+  { value: "Senior", labelKey: "ai.difficultySenior" },
+  { value: "Staff", labelKey: "ai.difficultyStaff" },
+];
+
+const languageOptions = [
+  { value: "English", labelKey: "ai.languageEnglish" },
+  { value: "English (slow)", labelKey: "ai.languageEnglishSlow" },
+  { value: "Bilingual hints", labelKey: "ai.languageBilingualHints" },
+];
+
+const typeOptions = [
+  { value: "Mixed", labelKey: "ai.typeMixed" },
+  { value: "Behavioral", labelKey: "ai.typeBehavioral" },
+  { value: "Technical", labelKey: "ai.typeTechnical" },
+  { value: "System Design", labelKey: "ai.typeSystemDesign" },
+];
+
+const durationOptions = [
+  { value: "15 minutes", labelKey: "ai.duration15" },
+  { value: "30 minutes", labelKey: "ai.duration30" },
+  { value: "45 minutes", labelKey: "ai.duration45" },
+  { value: "60 minutes", labelKey: "ai.duration60" },
+];
+
+const recentSessions = [
+  { nameKey: "ai.recentBackendMid", score: 78, dateKey: "ai.dateJun21" },
+  { nameKey: "ai.recentSystemDesignMid", score: 64, dateKey: "ai.dateJun18" },
+  { nameKey: "ai.recentBehavioralJunior", score: 81, dateKey: "ai.dateJun15" },
+];
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -78,8 +120,8 @@ export default function AIInterviewLobby() {
                   onChange={(e) => setRole(e.target.value)}
                   className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  {["Backend Developer", "Frontend Developer", "Full-Stack", "Data Engineer", "DevOps"].map((o) => (
-                    <option key={o}>{o}</option>
+                  {roleOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
                   ))}
                 </select>
               </Field>
@@ -89,7 +131,7 @@ export default function AIInterviewLobby() {
                   onChange={(e) => setDifficulty(e.target.value)}
                   className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  {["Junior", "Mid-level", "Senior", "Staff"].map((o) => <option key={o}>{o}</option>)}
+                  {difficultyOptions.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
                 </select>
               </Field>
               <Field label={t('ai.language')}>
@@ -98,7 +140,7 @@ export default function AIInterviewLobby() {
                   onChange={(e) => setLanguage(e.target.value)}
                   className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  {["English", "English (slow)", "Bilingual hints"].map((o) => <option key={o}>{o}</option>)}
+                  {languageOptions.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
                 </select>
               </Field>
               <Field label={t('ai.questionCount')}>
@@ -116,7 +158,7 @@ export default function AIInterviewLobby() {
                   onChange={(e) => setInterviewType(e.target.value)}
                   className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  {["Mixed", "Behavioral", "Technical", "System Design"].map((o) => <option key={o}>{o}</option>)}
+                  {typeOptions.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
                 </select>
               </Field>
               <Field label={t('ai.duration')}>
@@ -125,14 +167,14 @@ export default function AIInterviewLobby() {
                   onChange={(e) => setDuration(e.target.value)}
                   className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
                 >
-                  {["15 minutes", "30 minutes", "45 minutes", "60 minutes"].map((o) => <option key={o}>{o}</option>)}
+                  {durationOptions.map((o) => <option key={o.value} value={o.value}>{t(o.labelKey)}</option>)}
                 </select>
               </Field>
             </div>
 
             <div className="mt-5 pt-5 border-t border-border flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                {t('ai.estimatedSession')}: <span className="text-foreground font-medium">~{duration}</span> · {questionCount} {t('interview.questions')} · Voice answers
+                {t('ai.estimatedSession')}: <span className="text-foreground font-medium">~{t(durationOptions.find((o) => o.value === duration)?.labelKey || 'ai.duration30')}</span> · {questionCount} {t('interview.questions')} · {t('ai.voiceAnswers')}
               </p>
               <Link to="/ai-interview/room" onClick={handleStart}>
                 <Button size="lg"><Play className="w-4 h-4" /> {t('ai.startInterview')}</Button>
@@ -144,15 +186,11 @@ export default function AIInterviewLobby() {
         <div className="col-span-12 lg:col-span-4 space-y-4">
           <Panel title={t('ai.recentSessions')}>
             <ul className="space-y-3 -my-1">
-              {[
-                { name: "Backend · Mid", score: 78, date: "Jun 21" },
-                { name: "System Design · Mid", score: 64, date: "Jun 18" },
-                { name: "Behavioral · Junior", score: 81, date: "Jun 15" },
-              ].map((s) => (
-                <li key={s.date} className="flex items-center justify-between">
+              {recentSessions.map((s) => (
+                <li key={s.dateKey} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">{s.date}</p>
+                    <p className="text-sm font-medium">{t(s.nameKey)}</p>
+                    <p className="text-xs text-muted-foreground">{t(s.dateKey)}</p>
                   </div>
                   <span className="font-mono text-sm font-semibold">{s.score}</span>
                 </li>
