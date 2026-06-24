@@ -120,7 +120,14 @@ export default function WorkplaceScenarioDetail() {
     return saves;
   });
 
-  const [phraseSaves, setPhraseSaves] = useState<Record<string, boolean>>({});
+  const [phraseSaves, setPhraseSaves] = useState<Record<string, boolean>>(() => {
+    if (!scenario) return {};
+    const saves: Record<string, boolean> = {};
+    scenario.usefulPhrases.forEach((p) => {
+      saves[p.en] = isSentenceSaved(p.en);
+    });
+    return saves;
+  });
   const [toneChecked, setToneChecked] = useState<Set<number>>(new Set());
 
   const topics = useMemo(() => {
@@ -132,7 +139,7 @@ export default function WorkplaceScenarioDetail() {
     if (sentenceSaves[pattern]) {
       removeSentence(pattern);
       setSentenceSaves((prev) => ({ ...prev, [pattern]: false }));
-      toast.info(t('common.saved'));
+      toast.info(t('common.removed'));
     } else {
       saveSentence({ pattern, savedAt: new Date().toISOString() });
       setSentenceSaves((prev) => ({ ...prev, [pattern]: true }));
@@ -142,8 +149,9 @@ export default function WorkplaceScenarioDetail() {
 
   const handlePhraseSave = useCallback((en: string) => {
     if (phraseSaves[en]) {
+      removeSentence(en);
       setPhraseSaves((prev) => ({ ...prev, [en]: false }));
-      toast.info(t('common.saved'));
+      toast.info(t('common.removed'));
     } else {
       saveSentence({ pattern: en, savedAt: new Date().toISOString() });
       setPhraseSaves((prev) => ({ ...prev, [en]: true }));

@@ -30,10 +30,10 @@ export default function WorkplaceEnglish() {
           <div className="panel p-5 bg-accent border-primary/10 flex items-start justify-between gap-4">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('workplace.continue')}</div>
-              <h3 className="mt-1.5 text-lg font-semibold">Ask for clarification in a meeting</h3>
-              <p className="text-sm text-muted-foreground mt-1">Polite phrases, follow-ups, and tone control.</p>
+              <h3 className="mt-1.5 text-lg font-semibold">{t('workplace.continueClarificationTitle')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('workplace.continueClarificationDesc')}</p>
             </div>
-            <Link to="/learning"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
+            <Link to="/workplace-english/scenarios/meetings-clarification"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -80,7 +80,7 @@ export default function WorkplaceEnglish() {
 
         <div className="col-span-12 lg:col-span-4 space-y-4">
           <Panel title={t('workplace.miniDrill')}>
-            <p className="text-sm">Write a 3-sentence standup update.</p>
+            <p className="text-sm">{t('workplace.standupDrillPrompt')}</p>
             <textarea
               rows={5}
               placeholder={"Yesterday I…\nToday I…\nBlockers: …"}
@@ -93,9 +93,9 @@ export default function WorkplaceEnglish() {
 
           <Panel title={t('workplace.toneGuide')}>
             <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4">
-              <li>"Could you" sounds softer than "Can you".</li>
-              <li>Use "I'd suggest" instead of "You should".</li>
-              <li>End requests with "if that works for you".</li>
+              <li>{t('workplace.toneTip1')}</li>
+              <li>{t('workplace.toneTip2')}</li>
+              <li>{t('workplace.toneTip3')}</li>
             </ul>
           </Panel>
         </div>

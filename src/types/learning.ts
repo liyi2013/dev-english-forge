@@ -15,6 +15,13 @@ export interface LearningTopic {
   speakingPrompt: SpeakingPrompt;
   interviewQuestion: InterviewQuestion;
   commonMistakes: string[];
+  understandingCheck: {
+    question: string;
+    questionZh: string;
+    keywords: string[];
+    successFeedback: string;
+    failureHint: string;
+  };
 }
 
 export interface VocabularyItem {

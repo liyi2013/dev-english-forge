@@ -6,6 +6,8 @@ import { useI18n } from "@/i18n";
 import { toast } from "sonner";
 import { getReviewItems } from "@/data/mockReviewItems";
 import { getReviewQueue, getSavedVocabulary, getSavedSentences, updateReviewItemStatus, markMockItemReviewed } from "@/lib/mockStorage";
+import { getMockVocabulary } from "@/data/mockVocabulary";
+import { getMockTopics } from "@/data/mockTopics";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, ChevronRight, RotateCcw, BookOpen, Sparkles, MessageSquare } from "lucide-react";
 
 type ReviewMode = 'wrong_answers' | 'vocabulary' | 'sentences' | 'mixed';
@@ -39,6 +41,27 @@ export default function ReviewSession() {
   const buildItems = (m: ReviewMode): SessionItem[] => {
     const result: SessionItem[] = [];
 
+    // Build vocabulary lookup from mock data
+    const vocabLookup = new Map<string, string>();
+    getMockVocabulary().forEach((v) => {
+      vocabLookup.set(v.term.toLowerCase(), `${v.definitionEn}\n${v.definitionZh}\nExample: ${v.exampleSentence}`);
+    });
+    getMockTopics().forEach((tp) => {
+      (tp.vocabulary || []).forEach((v) => {
+        if (!vocabLookup.has((v.term || '').toLowerCase())) {
+          vocabLookup.set((v.term || '').toLowerCase(), `${v.definitionEn || ''}\n${v.definitionZh || ''}\nExample: ${v.exampleSentence || ''}`);
+        }
+      });
+    });
+
+    // Build sentence pattern lookup from mock data
+    const sentLookup = new Map<string, string>();
+    getMockTopics().forEach((tp) => {
+      (tp.sentencePatterns || []).forEach((sp) => {
+        sentLookup.set(sp.pattern, `${sp.meaningZh}\nExample: ${sp.example}`);
+      });
+    });
+
     if (m === 'wrong_answers' || m === 'mixed') {
       const mock = getReviewItems().map((r) => ({
         id: `mock-${r.id}`, type: 'wrong_answer' as const,
@@ -49,26 +72,35 @@ export default function ReviewSession() {
       const queue = getReviewQueue().map((r) => ({
         id: `queue-${r.id}`, type: 'wrong_answer' as const,
         title: r.title, prompt: r.title,
-        answer: '', source: r.source, mastered: false,
+        answer: r.title || t('review.sessionSource'),
+        source: r.source, mastered: false,
       }));
       result.push(...mock, ...queue);
     }
 
     if (m === 'vocabulary' || m === 'mixed') {
-      const vocab = getSavedVocabulary().map((v) => ({
-        id: `vocab-${v.term}`, type: 'vocab' as const,
-        title: v.term, prompt: v.term,
-        answer: '', source: t('review.modeVocabulary'), mastered: false,
-      }));
+      const vocab = getSavedVocabulary().map((v) => {
+        const lookup = vocabLookup.get(v.term.toLowerCase());
+        return {
+          id: `vocab-${v.term}`, type: 'vocab' as const,
+          title: v.term, prompt: `Recall the meaning of "${v.term}"`,
+          answer: lookup || `Saved vocabulary: ${v.term}`,
+          source: t('review.modeVocabulary'), mastered: false,
+        };
+      });
       result.push(...vocab);
     }
 
     if (m === 'sentences' || m === 'mixed') {
-      const sents = getSavedSentences().map((s, i) => ({
-        id: `sent-${i}`, type: 'sentence' as const,
-        title: s.pattern, prompt: s.pattern,
-        answer: '', source: t('review.modeSentences'), mastered: false,
-      }));
+      const sents = getSavedSentences().map((s, i) => {
+        const lookup = sentLookup.get(s.pattern);
+        return {
+          id: `sent-\${i}`, type: 'sentence' as const,
+          title: s.pattern, prompt: `Practice using this pattern: "${s.pattern}"`,
+          answer: lookup || `Saved sentence pattern: ${s.pattern}`,
+          source: t('review.modeSentences'), mastered: false,
+        };
+      });
       result.push(...sents);
     }
 
@@ -254,7 +286,7 @@ export default function ReviewSession() {
           <p className="text-xs text-muted-foreground mt-1">{item.prompt}</p>
         </div>
 
-        {showAnswer && (
+        {showAnswer && item.answer.trim() && (
           <div className="panel p-3 bg-accent/40 border-primary/10">
             <p className="text-xs font-medium text-primary mb-1">{t('review.showAnswer')}</p>
             <p className="text-sm">{item.answer}</p>

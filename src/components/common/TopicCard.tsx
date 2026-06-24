@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import type { ReactNode } from "react";
 
 export function TopicCard({
@@ -24,6 +25,7 @@ export function TopicCard({
   modeChips?: ReactNode;
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
     <Link
       to={`/technical-english/${slug}`}
@@ -36,7 +38,7 @@ export function TopicCard({
             <p className="text-[11px] text-muted-foreground mt-0.5">{titleZh}</p>
           )}
           <p className="text-[11px] uppercase tracking-wider text-primary font-semibold mt-1.5">
-            You'll learn to explain
+            {t("topicCard.learnToExplain")}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
             {explainGoal}

@@ -85,11 +85,11 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
         </div>
 
         <div className="p-6">
-          {tab === "Read" && <ReadTab topic={topic} />}
-          {tab === "Vocabulary" && <VocabularyTab topic={topic} />}
-          {tab === "Sentence" && <SentenceTab topic={topic} />}
-          {tab === "Speak" && <SpeakTab topic={topic} />}
-          {tab === "Interview" && <InterviewTab topic={topic} />}
+          {tab === "Read" && <ReadTab key={topic.slug} topic={topic} />}
+          {tab === "Vocabulary" && <VocabularyTab key={topic.slug} topic={topic} />}
+          {tab === "Sentence" && <SentenceTab key={topic.slug} topic={topic} />}
+          {tab === "Speak" && <SpeakTab key={topic.slug} topic={topic} />}
+          {tab === "Interview" && <InterviewTab key={topic.slug} topic={topic} />}
         </div>
 
         <div className="border-t border-border bg-background/50 p-4">
@@ -127,5 +127,5 @@ export default function TopicDetailRoute() {
     return <Navigate to="/technical-english" replace />;
   }
 
-  return <TopicDetailContent topic={topic} />;
+  return <TopicDetailContent key={topic.slug} topic={topic} />;
 }

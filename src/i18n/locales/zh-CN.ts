@@ -22,6 +22,8 @@ const zhCN: Record<string, string> = {
   'common.back': '返回',
   'common.notifications': '通知',
   'common.close': '关闭',
+  'common.typeAnswerEnglish': '用英语输入你的回答…',
+  'common.switchLanguage': '切换语言',
   'common.search': '搜索',
   'common.filter': '筛选',
   'common.all': '全部',
@@ -35,7 +37,10 @@ const zhCN: Record<string, string> = {
   'common.reset': '重置',
   'common.completed': '已完成',
   'common.record': '录制',
+  'common.removed': '已取消收藏',
   'common.evaluate': '评估',
+  'common.inProgress': '进行中',
+  'common.item': '项目',
 
   'dash.today': '今日学习',
   'dash.todayFocus': '今日重点',
@@ -62,6 +67,7 @@ const zhCN: Record<string, string> = {
   'learning.pathDetail': '学习路径',
   'learning.modules': '学习模块',
   'learning.milestone': '里程碑',
+  'learning.nextMilestone': '下一个里程碑',
   'learning.recommendedTopics': '推荐主题',
   'learning.noRecommendedTopics': '暂无主题',
   'learning.noRecommendedTopicsDesc': '该路径的主题内容正在准备中。',
@@ -82,6 +88,7 @@ const zhCN: Record<string, string> = {
   'tech.nextMilestone': '下一个里程碑',
   'tech.viewPlan': '查看计划',
 
+  'topicCard.learnToExplain': '你将学会用英语解释',
   'interview.title': '面试英语',
   'interview.desc': '自我介绍、项目经验、技术问答 —— 练的是面试英语，不是课本英语。',
   'interview.startMock': '开始模拟面试',
@@ -92,6 +99,9 @@ const zhCN: Record<string, string> = {
   'interview.lastPractice': '上次练习',
   'interview.seeExamples': '查看示例',
 
+  'interview.continueProjectTitle': '项目经验练习',
+  'interview.continueProjectDesc': '继续项目经验场景 —— 练习用英语描述你的项目经历。',
+  'interview.lastPracticeFeedback': '开场不错，可以补充更多可衡量的结果，比如性能提升数据。',
   'workplace.title': '职场英语',
   'workplace.desc': '邮件、会议、代码评审、日常协作 —— 入职后要用的英语。',
   'workplace.continue': '继续学习',
@@ -101,6 +111,12 @@ const zhCN: Record<string, string> = {
   'workplace.toneGuide': '语气指南',
   'workplace.savePhrase': '收藏短语',
 
+  'workplace.continueClarificationTitle': '会议与澄清',
+  'workplace.continueClarificationDesc': '练习用英语礼貌地澄清问题 —— 对非母语者至关重要。',
+  'workplace.standupDrillPrompt': '写一段简短的站会更新，涵盖已完成工作、下一步计划和遇到的障碍。',
+  'workplace.toneTip1': '使用礼貌开场："Could you clarify…" 或 "Just to confirm…"',
+  'workplace.toneTip2': '缓和语气词："I think"、"I believe"、"In my experience"',
+  'workplace.toneTip3': '避免直接否定：用 "I see it differently" 替代 "I disagree"',
   'workplaceScenario.backToWorkplace': '返回职场英语',
   'workplaceScenario.objective': '学习目标',
   'workplaceScenario.estimatedTime': '预计时间',
@@ -514,5 +530,7 @@ const zhCN: Record<string, string> = {
   'interview.scenarioProgress': '学习进度',
   'interview.progress': '进度',
   'interview.actions': '操作',
+  'notFound.title': '页面未找到',
+  'notFound.backHome': '返回首页',
 };
 export default zhCN;

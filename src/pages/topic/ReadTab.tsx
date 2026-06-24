@@ -67,8 +67,7 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
   };
 
   const handleCheckUnderstanding = () => {
-    const keywords = ["same", "repeated", "request", "result", "multiple"];
-    const hasKeyword = keywords.some((k) => understandingAnswer.toLowerCase().includes(k));
+    const hasKeyword = topic.understandingCheck.keywords.some((k) => understandingAnswer.toLowerCase().includes(k));
     setUnderstandingResult(hasKeyword);
   };
 
@@ -115,7 +114,7 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
             value={understandingAnswer}
             onChange={(e) => setUnderstandingAnswer(e.target.value)}
             rows={3}
-            placeholder="Type your answer in English…"
+            placeholder={t("common.typeAnswerEnglish")}
             className="w-full mt-2 text-sm bg-card border border-border rounded-md p-2.5 focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
           {understandingResult !== null && (

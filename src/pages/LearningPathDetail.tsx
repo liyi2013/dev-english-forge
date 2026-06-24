@@ -105,8 +105,9 @@ export default function LearningPathDetail() {
                         {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-success" />}
                         {isLocked && <Lock className="w-3.5 h-3.5 text-muted-foreground" />}
                       </div>
-                      <span className="text-[10px] uppercase tracking-wider font-semibold mt-0.5 block
-                        ${isCompleted ? 'text-success' : isLocked ? 'text-muted-foreground' : 'text-primary'}">
+                      <span className={`text-[10px] uppercase tracking-wider font-semibold mt-0.5 block ${
+                        isCompleted ? 'text-success' : isLocked ? 'text-muted-foreground' : 'text-primary'
+                      }`}>
                         {isCompleted ? t('common.completed') :
                          isInProgress ? t('common.inProgress') :
                          isNext ? t('learning.startModule') :

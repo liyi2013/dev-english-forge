@@ -35,10 +35,10 @@ export default function InterviewEnglish() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('common.continue')}</div>
-                <h3 className="mt-1.5 text-lg font-semibold">Explain your recent project</h3>
-                <p className="text-sm text-muted-foreground mt-1">Use the STAR pattern. Aim for 90 seconds. Voice + AI feedback.</p>
+                <h3 className="mt-1.5 text-lg font-semibold">{t('interview.continueProjectTitle')}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{t('interview.continueProjectDesc')}</p>
               </div>
-              <Link to="/learning"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
+              <Link to="/interview-english/scenarios/project-experience"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
             </div>
             <Progress value={28} className="mt-4" />
           </div>
@@ -96,7 +96,7 @@ export default function InterviewEnglish() {
           <Panel title={t('interview.lastPractice')}>
             <p className="text-sm font-medium">Explain your recent project</p>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> 2 days ago · 72 / 100</p>
-            <p className="text-xs text-muted-foreground mt-2">Strong opening. Missing measurable result at the end.</p>
+            <p className="text-xs text-muted-foreground mt-2">{t('interview.lastPracticeFeedback')}</p>
           </Panel>
         </div>
       </div>

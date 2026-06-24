@@ -18,9 +18,9 @@ function splitIntoChunks(text: string): string[] {
 }
 
 export default function ReportPractice() {
-  const { id } = useParams<{ id: string }>();
+  const { reportId } = useParams<{ reportId: string }>();
   const { t, locale } = useI18n();
-  const report = id ? getReportById(id) : undefined;
+  const report = reportId ? getReportById(reportId) : undefined;
 
   const [chunkIndex, setChunkIndex] = useState(0);
   const [practicedChunks, setPracticedChunks] = useState<Set<number>>(new Set());
@@ -67,7 +67,7 @@ export default function ReportPractice() {
           description={t("reportPractice.noPracticeAnswerDesc")}
           action={
             <div className="flex gap-2">
-              <Link to={`/ai-interview/report/${id}`}><Button variant="outline">{t("reportPractice.backToReport")}</Button></Link>
+              <Link to={`/ai-interview/report/${reportId}`}><Button variant="outline">{t("reportPractice.backToReport")}</Button></Link>
               <Link to="/ai-interview"><Button>{t("reportPractice.startNewInterview")}</Button></Link>
             </div>
           }
@@ -148,7 +148,7 @@ export default function ReportPractice() {
       practicedAt: new Date().toISOString(),
       answer: userAnswer,
       score: Math.floor(Math.random() * 30) + 60,
-      reportId: id,
+      reportId: reportId,
       questionIndex: 0,
     };
     const existing = JSON.parse(localStorage.getItem("devenglish_report_practice") || "[]");
@@ -177,7 +177,7 @@ export default function ReportPractice() {
     <div>
       <div className="mb-4">
         <Link
-          to={`/ai-interview/report/${id}`}
+          to={`/ai-interview/report/${reportId}`}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> {t("reportPractice.backToReport")}
@@ -410,7 +410,7 @@ export default function ReportPractice() {
         <div className="col-span-12 lg:col-span-4 space-y-4">
           <Panel title={t("reportPractice.nextActions")}>
             <div className="space-y-3">
-              <Link to={`/ai-interview/report/${id}`} className="block">
+              <Link to={`/ai-interview/report/${reportId}`} className="block">
                 <Button variant="outline" className="w-full">
                   <ArrowLeft className="w-3.5 h-3.5" /> {t("reportPractice.backToReport")}
                 </Button>

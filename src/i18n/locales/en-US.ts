@@ -34,8 +34,14 @@ const enUS: Record<string, string> = {
   'common.reset': 'Reset',
   'common.completed': 'Completed',
   'common.record': 'Record',
+  'common.removed': 'Removed from saved items',
   'common.evaluate': 'Evaluate',
+  'common.inProgress': 'In progress',
+  'common.item': 'Item',
+  'common.notifications': 'Notifications',
 
+  'common.typeAnswerEnglish': 'Type your answer in English…',
+  'common.switchLanguage': 'Switch language',
   'dash.today': "Today's Learning",
   'dash.todayFocus': "Today's Focus",
   'dash.continueLearning': 'Continue Learning',
@@ -61,6 +67,7 @@ const enUS: Record<string, string> = {
   'learning.pathDetail': 'Learning Path',
   'learning.modules': 'Modules',
   'learning.milestone': 'Milestone',
+  'learning.nextMilestone': 'Next milestone',
   'learning.recommendedTopics': 'Recommended Topics',
   'learning.noRecommendedTopics': 'No topics yet',
   'learning.noRecommendedTopicsDesc': 'The content for this path is being prepared.',
@@ -81,6 +88,7 @@ const enUS: Record<string, string> = {
   'tech.nextMilestone': 'Next milestone',
   'tech.viewPlan': 'View plan',
 
+  'topicCard.learnToExplain': "You'll learn to explain",
   'interview.title': 'Interview English',
   'interview.desc': 'Self-introduction, project experience, and technical Q&A — practiced in interview English.',
   'interview.startMock': 'Start mock interview',
@@ -91,6 +99,9 @@ const enUS: Record<string, string> = {
   'interview.lastPractice': 'Last Practice',
   'interview.seeExamples': 'See examples',
 
+  'interview.continueProjectTitle': 'Project Experience Practice',
+  'interview.continueProjectDesc': 'Continue your project experience scenario — practice describing what you built with STAR.',
+  'interview.lastPracticeFeedback': 'Good opening, try adding more measurable results. Consider mentioning performance improvements.',
   'workplace.title': 'Workplace English',
   'workplace.desc': 'Emails, meetings, code review, daily collaboration — the English you use after you get hired.',
   'workplace.continue': 'Continue Learning',
@@ -100,6 +111,12 @@ const enUS: Record<string, string> = {
   'workplace.toneGuide': 'Tone Guide',
   'workplace.savePhrase': 'Save phrase',
 
+  'workplace.continueClarificationTitle': 'Meetings & Clarification',
+  'workplace.continueClarificationDesc': 'Practice asking clarifying questions without losing face — key for non-native speakers.',
+  'workplace.standupDrillPrompt': "Write a quick standup update covering what you did, what's next, and any blockers.",
+  'workplace.toneTip1': 'Use polite openings: "Could you clarify…" or "Just to confirm…"',
+  'workplace.toneTip2': 'Softening phrases: "I think", "I believe", "In my experience"',
+  'workplace.toneTip3': 'Avoid direct negatives: "I disagree" → "I see it differently"',
   'workplaceScenario.backToWorkplace': 'Back to Workplace English',
   'workplaceScenario.objective': 'Learning Objective',
   'workplaceScenario.estimatedTime': 'Estimated Time',
@@ -513,5 +530,7 @@ const enUS: Record<string, string> = {
   'interview.scenarioProgress': 'Progress',
   'interview.progress': 'Progress',
   'interview.actions': 'Actions',
+  'notFound.title': 'Page not found',
+  'notFound.backHome': 'Back to Home',
 };
 export default enUS;

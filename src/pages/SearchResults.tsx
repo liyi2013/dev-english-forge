@@ -5,9 +5,9 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { useI18n } from "@/i18n";
 import { getMockTopics } from "@/data/mockTopics";
 import { getMockVocabulary } from "@/data/mockVocabulary";
-import { getQuestionsByMode } from "@/data/mockInterviewSessions";
+import { getQuestionsByMode, getRecentSessions } from "@/data/mockInterviewSessions";
 import { getMockReports } from "@/data/mockReports";
-import { getSavedSentences, getCompletedReports, saveVocabulary, removeVocabulary, isVocabSaved } from "@/lib/mockStorage";
+import { getSavedSentences, getCompletedReports, getGeneratedReports, saveVocabulary, removeVocabulary, isVocabSaved } from "@/lib/mockStorage";
 import { toast } from "sonner";
 import { BookOpen, Sparkles, MessageSquare, Mic, ArrowRight, Search, TrendingUp } from "lucide-react";
 
@@ -49,34 +49,68 @@ export default function SearchResults() {
 
   const questionItems = useMemo(() => {
     if (!q) return [];
-    return getQuestionsByMode('quick').filter((qItem) =>
-      qItem.question.toLowerCase().includes(q.toLowerCase())
-    );
+    const allQuestions = [
+      ...getQuestionsByMode('quick'),
+      ...getQuestionsByMode('jd'),
+      ...getRecentSessions().flatMap((s) => s.questions),
+    ];
+    const seen = new Set<string>();
+    return allQuestions.filter((qItem) => {
+      if (seen.has(qItem.question)) return false;
+      seen.add(qItem.question);
+      return qItem.question.toLowerCase().includes(q.toLowerCase());
+    });
   }, [q]);
 
   const reportItems = useMemo(() => {
     if (!q) return [];
+    const query = q.toLowerCase();
     const completed = getCompletedReports();
     const mockReports = getMockReports();
+    const generated = getGeneratedReports();
+
+    // Build a full report map from mock reports for deeper content search
+    const mockReportMap = new Map<string, import("@/types/interview").InterviewReport>();
+    mockReports.forEach((r) => mockReportMap.set(r.id, r));
+
+    const deepSearch = (item: { id: string; date?: string; overallScore?: number; title?: string }): boolean => {
+      if (item.title?.toLowerCase().includes(query)) return true;
+      if (item.overallScore != null && String(item.overallScore).includes(q)) return true;
+      const full = mockReportMap.get(item.id);
+      if (!full) return false;
+      return (
+        full.weakPoints.some((wp: string) => wp.toLowerCase().includes(query)) ||
+        full.questionDetails.some((qd) =>
+          qd.gapAnalysis.some((g: string) => g.toLowerCase().includes(query)) ||
+          (qd.betterAnswerVersion || '').toLowerCase().includes(query) ||
+          (qd.idealAnswer || '').toLowerCase().includes(query)
+        ) ||
+        full.recommendedLearning.some((rl) =>
+          rl.title.toLowerCase().includes(query) || rl.desc.toLowerCase().includes(query)
+        )
+      );
+    };
+
     const all = [
-      ...completed.map((r) => ({
-        id: r.id, date: r.date, overallScore: r.overallScore,
-        title: `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`,
-      })),
-      ...mockReports.map((r) => ({
-        id: r.id, date: r.date, overallScore: r.overallScore,
-        title: `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`,
-      })),
+      ...completed.map((r) => {
+        const title = `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`;
+        return { id: r.id, date: r.date, overallScore: r.overallScore, title };
+      }),
+      ...mockReports.map((r) => {
+        const title = `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`;
+        return { id: r.id, date: r.date, overallScore: r.overallScore, title };
+      }),
+      ...(Array.isArray(generated) ? generated.map((r: Record<string, unknown>) => {
+        const title = `${t("search.mockInterview")} · ${new Date((r.date as string) || Date.now()).toLocaleDateString()}`;
+        return { id: r.id as string, date: (r.date as string) || new Date().toISOString(), overallScore: (r.overallScore as number) || 0, title };
+      }) : []),
     ];
     // Deduplicate by id
     const byId = new Map<string, (typeof all)[number]>();
     all.forEach((item) => {
       if (!byId.has(item.id)) byId.set(item.id, item);
     });
-    return Array.from(byId.values()).filter((r) =>
-      r.title.toLowerCase().includes(q.toLowerCase()) ||
-      String(r.overallScore).includes(q)
-    );
+    return Array.from(byId.values()).filter((r) => deepSearch(r));
   }, [q, t]);
 
   const sentenceItems = useMemo(() => {
@@ -126,9 +160,9 @@ export default function SearchResults() {
                 <Link
                   key={term}
                   to={`/search?q=${encodeURIComponent(term)}`}
-                  className="chip hover:bg-accent hover:text-accent-foreground cursor-pointer transition"
+                  className="chip hover:bg-secondary cursor-pointer transition"
                 >
-                  <TrendingUp className="w-3 h-3" /> {term}
+                  {term}
                 </Link>
               ))}
             </div>
@@ -142,55 +176,33 @@ export default function SearchResults() {
     <div>
       <PageHeader
         title={t('search.title')}
-        subtitle={`${totals[filter]} ${t('search.resultsFor')} "${q}"`}
+        subtitle={`"${q}"`}
+        actions={
+          <div className="flex items-center gap-2">
+            {filters.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`chip transition ${filter === f ? 'bg-primary text-primary-foreground' : ''}`}
+              >
+                {t(f === 'All' ? 'common.all' : f === 'Topics' ? 'search.topicsLabel' : f === 'Vocabulary' ? 'search.termsLabel' : f === 'Questions' ? 'search.qaLabel' : f === 'Reports' ? 'search.pastSessions' : 'search.sentencesLabel')}
+                <span className="text-[10px] opacity-70 ml-1">{totals[f]}</span>
+              </button>
+            ))}
+          </div>
+        }
       />
 
-      {/* Mobile: stacked layout; Desktop: single row */}
-      <div className="panel p-3 mb-6 space-y-2 md:space-y-0 md:flex md:items-center md:gap-2">
-        <div className="flex items-center gap-2 w-full md:w-auto md:flex-1">
-          <Search className="w-4 h-4 text-muted-foreground shrink-0 ml-1" />
-          <input
-            defaultValue={q}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") setParams({ q: (e.target as HTMLInputElement).value });
-            }}
-            className="flex-1 h-8 bg-transparent text-sm focus:outline-none min-w-0"
-            placeholder={t('search.placeholder')}
-          />
-        </div>
-        <div className="flex gap-1 overflow-x-auto pb-1 md:pb-0 -mx-1 px-1 md:mx-0 md:px-0">
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`chip whitespace-nowrap shrink-0 ${filter === f ? "bg-primary text-primary-foreground border-primary" : ""}`}
-            >
-              {f === 'All' ? t('search.groupAll') :
-               f === 'Topics' ? t('search.topics') :
-               f === 'Vocabulary' ? t('search.vocabulary') :
-               f === 'Questions' ? t('search.questions') :
-               f === 'Reports' ? t('search.reports') :
-               t('search.sentences')} ({totals[f]})
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {totals['All'] === 0 ? (
-        <EmptyState
-          icon={<Search className="w-8 h-8" />}
-          title={t('search.emptyState')}
-          description={t('search.emptyStateDesc')}
-          action={<Link to="/technical-english"><Button variant="outline">{t('search.browseLearning')}</Button></Link>}
-        />
+      {totals.All === 0 ? (
+        <EmptyState title={t('common.noResults')} description={`${t('search.noResultsFor')} "${q}"`} />
       ) : (
-        <div className="space-y-6">
+        <div className="max-w-3xl space-y-6">
           {(filter === 'All' || filter === 'Topics') && topics.length > 0 && (
-            <Panel title={t('search.topics')} description={`${topics.length} ${t('search.matchingTopics')}`} action={<span className="chip"><BookOpen className="w-3 h-3" /> {t('search.lessons')}</span>}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Panel title={t('search.topics')} description={`${topics.length} ${t('search.matchingTopics')}`} action={<span className="chip"><BookOpen className="w-3 h-3" /> {t('search.topicsLabel')}</span>}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 -my-2">
                 {topics.map((t) => (
-                  <Link key={t.slug} to={`/technical-english/${t.slug}`} className="panel p-4 hover:border-primary/40 transition block">
-                    <span className="chip-blue">{t.level}</span>
+                  <Link key={t.slug} to={`/technical-english/${t.slug}`} className="panel p-3 hover:border-primary/40 transition">
+                    <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">{t.level}</span>
                     <h4 className="mt-2 text-sm font-semibold"><Highlight text={t.title} q={q} /></h4>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed"><Highlight text={t.explainGoal} q={q} /></p>
                   </Link>
@@ -242,7 +254,7 @@ export default function SearchResults() {
             <Panel title={t('search.reports')} description={`${reportItems.length} ${t('search.matchingReports')}`} action={<span className="chip"><Mic className="w-3 h-3" /> {t('search.pastSessions')}</span>}>
               <ul className="divide-y divide-border -my-2">
                 {reportItems.map((r, i) => (
-                  <li key={`${r.date}-${i}`} className="flex items-start justify-between py-3 gap-4">
+                  <li key={`${r.id}-${i}`} className="flex items-start justify-between py-3 gap-4">
                     <div>
                       <p className="text-sm font-medium">{r.title}</p>
                     </div>

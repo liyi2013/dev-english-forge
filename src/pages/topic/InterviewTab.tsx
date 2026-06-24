@@ -22,7 +22,7 @@ export function InterviewTab({ topic }: { topic: LearningTopic }) {
           value={interviewAnswer}
           onChange={(e) => setInterviewAnswer(e.target.value)}
           rows={5}
-          placeholder="Type your answer in English…"
+          placeholder={t("common.typeAnswerEnglish")}
           className="w-full mt-1.5 text-sm bg-card border border-border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-ring/40"
         />
         <div className="flex gap-2 mt-2">
