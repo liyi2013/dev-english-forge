@@ -230,3 +230,38 @@ export function saveGeneratedReport(report: Record<string, unknown>): void {
 export function getGeneratedReportById(id: string): Record<string, unknown> | undefined {
   return getGeneratedReports().find((r) => r.id === id);
 }
+
+// --- Profile ---
+const PROFILE_KEY = PREFIX + 'profile';
+
+export interface StoredProfileDraft {
+  name: string;
+  nameZh: string;
+  role: string;
+  roleZh: string;
+  experience: string;
+  target: string;
+  targetZh: string;
+  dailyGoal: number;
+  interfaceLanguage: string;
+  voiceAccent: string;
+  notifications: string;
+  initials: string;
+}
+
+export function getStoredProfile(): StoredProfileDraft | null {
+  try {
+    const raw = localStorage.getItem(PROFILE_KEY);
+    return raw ? (JSON.parse(raw) as StoredProfileDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredProfile(profile: StoredProfileDraft): void {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+}
+
+export function clearStoredProfile(): void {
+  localStorage.removeItem(PROFILE_KEY);
+}

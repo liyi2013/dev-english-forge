@@ -13,14 +13,16 @@ import WorkplaceEnglish from "./pages/WorkplaceEnglish";
 import AIInterviewLobby from "./pages/AIInterviewLobby";
 import InterviewRoom from "./pages/InterviewRoom";
 import InterviewReport from "./pages/InterviewReport";
-import Review from "./pages/Review";
+import ReportPractice from "./pages/ReportPractice";import Review from "./pages/Review";
 import Profile from "./pages/Profile";
-import SearchResults from "./pages/SearchResults";
+import ProfileEdit from "./pages/ProfileEdit";import SearchResults from "./pages/SearchResults";
 import TechnicalPathDetail from "./pages/TechnicalPathDetail";
 import NotFound from "./pages/NotFound";
 import LearningPathDetail from "./pages/LearningPathDetail";
 import ReviewSession from "./pages/ReviewSession";
-
+import TechnicalPlan from "./pages/TechnicalPlan";
+import InterviewScenarioDetail from "./pages/InterviewScenarioDetail";
+import WorkplaceScenarioDetail from "./pages/WorkplaceScenarioDetail";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,18 +37,20 @@ const App = () => (
             <Route path="/learning" element={<Learning />} />
             <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
             <Route path="/technical-english" element={<TechnicalEnglish />} />
+            <Route path="/technical-english/plan" element={<TechnicalPlan />} />
             <Route path="/technical-english/paths/:pathSlug" element={<TechnicalPathDetail />} />
             <Route path="/technical-english/:topicSlug" element={<TopicDetail />} />
+            <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
             <Route path="/interview-english" element={<InterviewEnglish />} />
             <Route path="/workplace-english" element={<WorkplaceEnglish />} />
-            <Route path="/ai-interview" element={<AIInterviewLobby />} />
+            <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />            <Route path="/ai-interview" element={<AIInterviewLobby />} />
             <Route path="/ai-interview/room" element={<InterviewRoom />} />
             <Route path="/ai-interview/report" element={<InterviewReport />} />
             <Route path="/ai-interview/report/:reportId" element={<InterviewReport />} />
-            <Route path="/review/session" element={<ReviewSession />} />
+            <Route path="/ai-interview/report/:reportId/practice" element={<ReportPractice />} />            <Route path="/review/session" element={<ReviewSession />} />
             <Route path="/review" element={<Review />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/search" element={<SearchResults />} />
+            <Route path="/profile/edit" element={<ProfileEdit />} />            <Route path="/search" element={<SearchResults />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

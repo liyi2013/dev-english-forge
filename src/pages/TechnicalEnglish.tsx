@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { TopicCard } from "@/components/common/TopicCard";
 import { useI18n } from "@/i18n";
-import { toast } from "sonner";
 import { getMockTopics } from "@/data/mockTopics";
 import { getCoreSkills } from "@/data/mockProfile";
 import { ArrowRight, BookOpen, Mic, MessageSquare, Sparkles } from "lucide-react";
@@ -122,7 +121,7 @@ export default function TechnicalEnglish() {
             <div className="mt-5 pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">{t('tech.nextMilestone')}</p>
               <p className="text-sm font-medium mt-0.5">{t("tech.reachB2")}</p>
-              <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => toast.info(t("common.comingSoon"))}>{t('tech.viewPlan')}</Button>
+              <Link to="/technical-english/plan" className="mt-3 block"><Button variant="outline" size="sm" className="w-full">{t('tech.viewPlan')}</Button></Link>
             </div>
           </Panel>
         </div>

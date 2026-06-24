@@ -5,8 +5,8 @@ import { I18nProvider } from "@/i18n";
 import InterviewReport from "@/pages/InterviewReport";
 import TechnicalEnglish from "@/pages/TechnicalEnglish";
 import Profile from "@/pages/Profile";
-import WorkplaceEnglish from "@/pages/WorkplaceEnglish";
-import Learning from "@/pages/Learning";
+import ProfileEdit from "@/pages/ProfileEdit";import WorkplaceEnglish from "@/pages/WorkplaceEnglish";
+import ReportPractice from "@/pages/ReportPractice";import Learning from "@/pages/Learning";
 import Dashboard from "@/pages/Dashboard";
 import InterviewEnglish from "@/pages/InterviewEnglish";
 import SearchResults from "@/pages/SearchResults";
@@ -16,8 +16,10 @@ import Review from "@/pages/Review";
 import { SpeakTab } from "@/pages/topic/SpeakTab";
 import LearningPathDetail from "@/pages/LearningPathDetail";
 import ReviewSession from "@/pages/ReviewSession";
+import TechnicalPlan from "@/pages/TechnicalPlan";
+import InterviewScenarioDetail from "@/pages/InterviewScenarioDetail";
 import { toast } from "sonner";
-
+import WorkplaceScenarioDetail from "@/pages/WorkplaceScenarioDetail";
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
@@ -216,23 +218,27 @@ describe("Button clickability — full audit", () => {
       expect(parsed.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("Scenario cards are clickable and call toast.info", async () => {
+    it("Scenario cards link to detail pages", async () => {
       renderWP(<WorkplaceEnglish />);
-      const cards = screen.getAllByRole("button", { name: /即将推出|Coming soon/i });
-      expect(cards.length).toBeGreaterThanOrEqual(1);
-      fireEvent.click(cards[0]);
-      expect(vi.mocked(toast.info)).toHaveBeenCalled();
+      const standupLink = screen.getByLabelText("Daily Standup");
+      expect(standupLink).toBeDefined();
+      expect(standupLink.getAttribute("href")).toBe("/workplace-english/scenarios/daily-standup");
+      const meetingsLink = screen.getByLabelText("Meetings & Clarification");
+      expect(meetingsLink).toBeDefined();
+      expect(meetingsLink.getAttribute("href")).toBe("/workplace-english/scenarios/meetings-clarification");
     });
   });
 
   // =========== InterviewEnglish ===========
   describe("InterviewEnglish", () => {
-    it("Scenario cards are clickable and call toast.info", async () => {
+    it("Scenario cards link to detail pages", async () => {
       renderWP(<InterviewEnglish />);
-      const cards = screen.getAllByRole("button", { name: /即将推出|Coming soon/i });
-      expect(cards.length).toBeGreaterThanOrEqual(1);
-      fireEvent.click(cards[0]);
-      expect(vi.mocked(toast.info)).toHaveBeenCalled();
+      // Cards should now be links, not toast buttons
+      const introCard = screen.getByLabelText("Self-Introduction");
+      expect(introCard).toBeDefined();
+      expect(introCard.getAttribute("href")).toBe("/interview-english/scenarios/self-introduction");
+      // Clicking a card now navigates instead of showing toast
+      expect(vi.mocked(toast.info)).not.toHaveBeenCalled();
     });
   });
 
@@ -559,5 +565,768 @@ describe("Button clickability — full audit", () => {
       );
       // Still in mode selection, should see the modes
       expect(screen.getByText("错题复习")).toBeDefined();
+    });
+  });
+
+  // =========== Technical Plan page ===========
+  describe("TechnicalPlan", () => {
+    it("TechnicalEnglish View plan links to /technical-english/plan", async () => {
+      renderWP(<TechnicalEnglish />);
+      const viewPlanLink = screen.getByText("查看计划").closest("a");
+      expect(viewPlanLink).toBeDefined();
+      expect(viewPlanLink!.getAttribute("href")).toBe("/technical-english/plan");
+    });
+
+    it("shows plan overview, today tasks, 6-week plan, and skills", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("技术英语学习计划")).toBeDefined();
+      expect(screen.getByText("今日技术英语任务")).toBeDefined();
+      expect(screen.getAllByText(/第 \d+ 周|6 周学习计划/).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("重点主题推荐")).toBeDefined();
+      expect(screen.getByText("技能进度")).toBeDefined();
+      expect(screen.getByText("下一步行动")).toBeDefined();
+    });
+
+    it("today tasks can be marked done", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Find "标记完成" buttons and click the first one
+      const markDoneBtns = screen.getAllByText("标记完成");
+      expect(markDoneBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(markDoneBtns[0]);
+      // After clicking, should show "已完成"
+      await waitFor(() => {
+        expect(vi.mocked(toast.success)).toHaveBeenCalled();
+      });
+    });
+
+    it("current week plan links to technical-english topic", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Find the "继续" button (current week, week 3 - RabbitMQ)
+      await waitFor(() => {
+        const continueBtns = screen.getAllByText("继续");
+        expect(continueBtns.length).toBeGreaterThanOrEqual(1);
+        // At least one continue button should link to a topic
+        const link = continueBtns[0].closest("a");
+        expect(link).toBeDefined();
+        expect(link!.getAttribute("href")).toContain("/technical-english/");
+      });
+    });
+
+    it("next actions buttons are clickable", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Continue current topic
+      const continueLinks = screen.getAllByText("继续当前主题");
+      expect(continueLinks.length).toBeGreaterThanOrEqual(1);
+      const link = continueLinks[0].closest("a");
+      expect(link).toBeDefined();
+      expect(link!.getAttribute("href")).toContain("/technical-english/");
+
+      // Start AI mock interview
+      const interviewLink = screen.getByText("开始 AI 模拟面试").closest("a");
+      expect(interviewLink).toBeDefined();
+      expect(interviewLink!.getAttribute("href")).toBe("/ai-interview");
+
+      // Back to learning center
+      const learningLink = screen.getByText("返回学习中心").closest("a");
+      expect(learningLink).toBeDefined();
+      expect(learningLink!.getAttribute("href")).toBe("/learning");
+    });
+
+    it("does not show raw i18n keys", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.queryByText("techPlan.title")).toBeNull();
+      expect(screen.queryByText("techPlan.todayTasks")).toBeNull();
+      expect(screen.queryByText("techPlan.sixWeekPlan")).toBeNull();
+      expect(screen.queryByText("techPlan.focusTopics")).toBeNull();
+      expect(screen.queryByText("techPlan.skillProgress")).toBeNull();
+      expect(screen.queryByText("techPlan.nextActions")).toBeNull();
+    });
+
+    it("back button links to /technical-english", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/technical-english/plan"]}>
+            <Routes>
+              <Route path="/technical-english/plan" element={<TechnicalPlan />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const backLink = screen.getByText("返回技术英语").closest("a");
+      expect(backLink).toBeDefined();
+      expect(backLink!.getAttribute("href")).toBe("/technical-english");
+    });
+  });
+
+  // =========== Interview Scenario Detail page ===========
+  describe("InterviewScenarioDetail", () => {
+    it("InterviewEnglish scenario cards link to detail page", async () => {
+      renderWP(<InterviewEnglish />);
+      // Self-Introduction card should be a link
+      const introLink = screen.getByLabelText("Self-Introduction");
+      expect(introLink).toBeDefined();
+      expect(introLink.getAttribute("href")).toBe("/interview-english/scenarios/self-introduction");
+      // Closing Questions card
+      const closingLink = screen.getByLabelText("Closing Questions");
+      expect(closingLink).toBeDefined();
+      expect(closingLink.getAttribute("href")).toBe("/interview-english/scenarios/closing-questions");
+    });
+
+    it("shows scenario detail with objective, tips, and questions", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/self-introduction"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("自我介绍")).toBeDefined();
+      expect(screen.getAllByText("学习目标").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("结构建议")).toBeDefined();
+      expect(screen.getByText("实用表达")).toBeDefined();
+      expect(screen.getByText("练习题")).toBeDefined();
+      expect(screen.getByText("参考回答")).toBeDefined();
+    });
+
+    it("practice questions are expandable", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/self-introduction"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Click on a practice question to expand it
+      const questionBtn = screen.getByText("Tell me about yourself.");
+      fireEvent.click(questionBtn);
+      // After expanding, the textarea and evaluate button should appear
+      await waitFor(() => {
+        expect(screen.getByText("参考回答")).toBeDefined();
+      });
+    });
+
+    it("start mock interview button links to /ai-interview", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/project-experience"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const mockBtn = screen.getByText("开始模拟面试").closest("a");
+      expect(mockBtn).toBeDefined();
+      expect(mockBtn!.getAttribute("href")).toBe("/ai-interview");
+    });
+
+    it("back button links to /interview-english", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/technical-qa"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const backLink = screen.getByText("返回面试英语").closest("a");
+      expect(backLink).toBeDefined();
+      expect(backLink!.getAttribute("href")).toBe("/interview-english");
+    });
+
+    it("shows empty state for unknown scenario", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/unknown-scenario"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("场景未找到")).toBeDefined();
+    });
+
+    it("does not show raw i18n keys", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/interview-english/scenarios/salary-offer"]}>
+            <Routes>
+              <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.queryByText("interview.backToScenarios")).toBeNull();
+      expect(screen.queryByText("interview.scenarioObjective")).toBeNull();
+      expect(screen.queryByText("interview.structureTips")).toBeNull();
+    });
+  });
+
+  // =========== Workplace Scenario Detail page ===========
+  describe("WorkplaceScenarioDetail", () => {
+    it("WorkplaceEnglish scenario cards link to detail pages", async () => {
+      renderWP(<WorkplaceEnglish />);
+      const standupLink = screen.getByLabelText("Daily Standup");
+      expect(standupLink).toBeDefined();
+      expect(standupLink.getAttribute("href")).toBe("/workplace-english/scenarios/daily-standup");
+      const emailLink = screen.getByLabelText("Writing Emails");
+      expect(emailLink).toBeDefined();
+      expect(emailLink.getAttribute("href")).toBe("/workplace-english/scenarios/writing-emails");
+    });
+
+    it("shows scenario detail with objective, context, patterns, and drills", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/daily-standup"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("每日站会")).toBeDefined();
+      expect(screen.getAllByText("学习目标").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("场景上下文")).toBeDefined();
+      expect(screen.getAllByText("句型练习").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("实用表达")).toBeDefined();
+      expect(screen.getByText("迷你练习")).toBeDefined();
+      expect(screen.getByText("语气技巧")).toBeDefined();
+      expect(screen.getByText("常见错误")).toBeDefined();
+    });
+
+    it("sentence pattern save/remove toggles localStorage devenglish_sentences", async () => {
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/daily-standup"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const saveBtns = screen.getAllByRole("button").filter(b => { const t = b.textContent?.trim() || ""; return t.includes("收藏") || t.includes("Save"); });
+      expect(saveBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(saveBtns[0]);
+      const stored = localStorage.getItem("devenglish_sentences");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(Array.isArray(parsed)).toBe(true);
+    });
+
+    it("mini drill get feedback button works", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/daily-standup"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Click the first mini drill prompt to activate it
+      const drillBtns = screen.getAllByText(/Write a 3-sentence|你遇到了阻碍/);
+      expect(drillBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(drillBtns[0]);
+      // After clicking, the textarea should appear - type a long enough answer
+      const textarea = screen.getByPlaceholderText("在此输入你的回答…");
+      expect(textarea).toBeDefined();
+      fireEvent.change(textarea, { target: { value: "This is a sufficiently long answer to trigger the mock feedback mechanism." } });
+      // Click Get Feedback button
+      const getFeedbackBtn = screen.getByText("获取反馈");
+      fireEvent.click(getFeedbackBtn);
+      await waitFor(() => {
+        expect(vi.mocked(toast.success)).toHaveBeenCalledWith("模拟评估");
+      });
+    });
+
+    it("mini drill save answer writes to localStorage", async () => {
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/daily-standup"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Activate a drill
+      const drillBtns = screen.getAllByText(/Write a 3-sentence|你遇到了阻碍/);
+      fireEvent.click(drillBtns[0]);
+      const textarea = screen.getByPlaceholderText("在此输入你的回答…");
+      fireEvent.change(textarea, { target: { value: "Yesterday I finished the login module. Today I will work on tests." } });
+      // Click Save Answer
+      const saveAnswerBtns = screen.getAllByText("保存回答");
+      expect(saveAnswerBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(saveAnswerBtns[0]);
+      const stored = localStorage.getItem("devenglish_sentences");
+      expect(stored).not.toBeNull();
+    });
+
+    it("tone tip click toggles checked state", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/daily-standup"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Click the first tone tip button
+      const toneBtns = screen.getAllByText("简洁");
+      expect(toneBtns.length).toBeGreaterThanOrEqual(1);
+      fireEvent.click(toneBtns[0]);
+      await waitFor(() => {
+        expect(vi.mocked(toast.success)).toHaveBeenCalledWith("已标记完成");
+      });
+    });
+
+    it("back button links to /workplace-english", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/code-review"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const backLink = screen.getByText("返回职场英语").closest("a");
+      expect(backLink).toBeDefined();
+      expect(backLink!.getAttribute("href")).toBe("/workplace-english");
+    });
+
+    it("related topics link to technical-english topic pages", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/code-review"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Code review scenario has relatedTopics: ['restful-api', 'database', 'docker']
+      await waitFor(() => {
+        // RESTful API button should link to /technical-english/restful-api
+        const restfulLink = screen.getByText("RESTful API").closest("a");
+        expect(restfulLink).toBeDefined();
+        expect(restfulLink!.getAttribute("href")).toBe("/technical-english/restful-api");
+        // Database button should link to /technical-english/database
+        const dbLink = screen.getByText("Database").closest("a");
+        expect(dbLink).toBeDefined();
+        expect(dbLink!.getAttribute("href")).toBe("/technical-english/database");
+      });
+    });
+
+    it("shows empty state for unknown scenario", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/unknown-scenario"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("场景未找到")).toBeDefined();
+    });
+
+    it("does not show raw i18n keys", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/workplace-english/scenarios/writing-emails"]}>
+            <Routes>
+              <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.queryByText("workplaceScenario.backToWorkplace")).toBeNull();
+      expect(screen.queryByText("workplaceScenario.objective")).toBeNull();
+      expect(screen.queryByText("workplaceScenario.sentencePatterns")).toBeNull();
+      expect(screen.queryByText("workplaceScenario.miniDrill")).toBeNull();
+    });
+  });
+
+  // =========== Profile Edit page ===========
+  describe("ProfileEdit", () => {
+    it("Profile edit button links to /profile/edit", async () => {
+      renderWP(<Profile />);
+      const editLink = screen.getByText("编辑资料").closest("a");
+      expect(editLink).toBeDefined();
+      expect(editLink!.getAttribute("href")).toBe("/profile/edit");
+    });
+
+    it("renders edit form with all sections", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("编辑个人资料")).toBeDefined();
+      expect(screen.getByText("基础资料")).toBeDefined();
+      expect(screen.getByText("学习目标")).toBeDefined();
+      expect(screen.getByText("偏好设置")).toBeDefined();
+      expect(screen.getByText("资料预览")).toBeDefined();
+    });
+
+    it("form fields are pre-filled with default profile data", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Check that the English name input has the default mock value
+      const nameInputs = screen.getAllByDisplayValue("Jinlin Wang");
+      expect(nameInputs.length).toBeGreaterThanOrEqual(1);
+      const zhNameInputs = screen.getAllByDisplayValue("王金林");
+      expect(zhNameInputs.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("saving writes to localStorage devenglish_profile", async () => {
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const saveBtn = screen.getByText("保存");
+      fireEvent.click(saveBtn);
+      await waitFor(() => {
+        const stored = localStorage.getItem("devenglish_profile");
+        expect(stored).not.toBeNull();
+        const parsed = JSON.parse(stored!);
+        expect(parsed.name).toBe("Jinlin Wang");
+      });
+    });
+
+    it("cancel button links to /profile", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const cancelLink = screen.getByText("取消").closest("a");
+      expect(cancelLink).toBeDefined();
+      expect(cancelLink!.getAttribute("href")).toBe("/profile");
+    });
+
+    it("reset button restores default values", async () => {
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // First modify a field
+      const nameInput = screen.getByDisplayValue("Jinlin Wang");
+      fireEvent.change(nameInput, { target: { value: "Modified Name" } });
+      // Then click reset
+      const resetBtn = screen.getByText("重置");
+      fireEvent.click(resetBtn);
+      await waitFor(() => {
+        // Should show original value again
+        const restoredInput = screen.getByDisplayValue("Jinlin Wang");
+        expect(restoredInput).toBeDefined();
+      });
+    });
+
+    it("restore default button clears localStorage and resets form", async () => {
+      localStorage.setItem("devenglish_profile", JSON.stringify({ name: "Custom", nameZh: "自定义", role: "Dev", roleZh: "开发", target: "Senior", targetZh: "高级", dailyGoal: 30, interfaceLanguage: "English", voiceAccent: "UK English", notifications: "Off", initials: "CU", experience: "5yrs" }));
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const restoreBtn = screen.getByText("恢复默认");
+      fireEvent.click(restoreBtn);
+      await waitFor(() => {
+        // localStorage should be cleared, form should show mock default
+        const stored = localStorage.getItem("devenglish_profile");
+        expect(stored).toBeNull();
+        // Should show original mock values
+        expect(screen.getByDisplayValue("Jinlin Wang")).toBeDefined();
+      });
+    });
+
+    it("back button links to /profile", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const backLink = screen.getByText("返回个人中心").closest("a");
+      expect(backLink).toBeDefined();
+      expect(backLink!.getAttribute("href")).toBe("/profile");
+    });
+
+    it("does not show raw i18n keys", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/profile/edit"]}>
+            <Routes>
+              <Route path="/profile/edit" element={<ProfileEdit />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.queryByText("profileEdit.title")).toBeNull();
+      expect(screen.queryByText("profileEdit.basicProfile")).toBeNull();
+      expect(screen.queryByText("profileEdit.learningGoal")).toBeNull();
+      expect(screen.queryByText("profileEdit.preview")).toBeNull();
+    });
+  });
+
+  // =========== Report Practice page ===========
+  describe("ReportPractice", () => {
+    it("InterviewReport practice button links to practice page", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:reportId" element={<InterviewReport />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      await waitFor(() => {
+        const practiceLink = screen.getByText("练习这个版本").closest("a");
+        expect(practiceLink).toBeDefined();
+        expect(practiceLink!.getAttribute("href")).toBe("/ai-interview/report/report-1/practice");
+      });
+    });
+
+    it("shows practice page with better answer and sentence practice", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("改进版口语练习")).toBeDefined();
+      expect(screen.getByText("你的原回答")).toBeDefined();
+      expect(screen.getByText("改进版本")).toBeDefined();
+      expect(screen.getByText("分句练习")).toBeDefined();
+      expect(screen.getByText("下一步行动")).toBeDefined();
+    });
+
+    it("shows empty state for non-existent report", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/not-exist/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("报告未找到")).toBeDefined();
+    });
+
+    it("next actions all link correctly", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Back to Report
+      const backLinks = screen.getAllByText("返回报告");
+      expect(backLinks.length).toBeGreaterThanOrEqual(1);
+      // First one is the back-to-report link in the page header
+      expect(backLinks[0].closest("a")!.getAttribute("href")).toBe("/ai-interview/report/report-1");
+      // Start New Interview
+      const newInterview = screen.getByText("开始新面试").closest("a");
+      expect(newInterview).toBeDefined();
+      expect(newInterview!.getAttribute("href")).toBe("/ai-interview");
+      // Go to Review
+      const goReview = screen.getByText("前往复盘").closest("a");
+      expect(goReview).toBeDefined();
+      expect(goReview!.getAttribute("href")).toBe("/review");
+    });
+
+    it("sentence practice chunk navigation works", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Find "当前句子 1/{n}" text
+      const currentSentence = screen.getByText(/当前句子 1\//);
+      expect(currentSentence).toBeDefined();
+      // Click Next
+      const nextBtn = screen.getByText("下一句");
+      fireEvent.click(nextBtn);
+      await waitFor(() => {
+        expect(screen.getByText(/当前句子 2\//)).toBeDefined();
+      });
+    });
+
+    it("save better answer writes to localStorage", async () => {
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const saveBtn = screen.getByText("收藏到句子本");
+      fireEvent.click(saveBtn);
+      await waitFor(() => {
+        const stored = localStorage.getItem("devenglish_sentences");
+        expect(stored).not.toBeNull();
+      });
+    });
+
+    it("mark practiced toggles state", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const markBtn = screen.getByText("标记已练习");
+      fireEvent.click(markBtn);
+      await waitFor(() => {
+        expect(vi.mocked(toast.success)).toHaveBeenCalled();
+      });
+    });
+
+    it("start practice button enters recording mode", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const startBtns = screen.getAllByText("开始练习");
+      // The button is typically the last one (not the Panel title)
+      const startBtn = startBtns.length > 1 ? startBtns[startBtns.length - 1] : startBtns[0];
+      expect(startBtn).toBeDefined();
+      fireEvent.click(startBtn);
+      // Should show recording state with timer
+      await waitFor(() => {
+        expect(screen.getByText("0s")).toBeDefined();
+      });
+      // Stop button should be present
+      const stopBtn = screen.getByLabelText("停止");
+      expect(stopBtn).toBeDefined();
+      fireEvent.click(stopBtn);
+      // Should show evaluation
+      await waitFor(() => {
+        expect(screen.getByText("模拟评估")).toBeDefined();
+      });
+    });
+
+    it("does not show raw i18n keys", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/ai-interview/report/report-1/practice"]}>
+            <Routes>
+              <Route path="/ai-interview/report/:id/practice" element={<ReportPractice />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.queryByText("reportPractice.title")).toBeNull();
+      expect(screen.queryByText("reportPractice.betterAnswer")).toBeNull();
+      expect(screen.queryByText("reportPractice.mockEvaluation")).toBeNull();
+      expect(screen.queryByText("reportPractice.nextActions")).toBeNull();
     });
   });

@@ -225,7 +225,7 @@ export default function InterviewReport() {
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">{report.questionDetails[0].betterAnswerVersion}</p>
                   <div className="mt-3 flex gap-2">
-                    <Button size="sm" onClick={() => toast.info(t("common.comingSoon"))}><Sparkles className="w-3.5 h-3.5" /> {t('report.practiceThisVersion')}</Button>
+                    <Link to={`/ai-interview/report/${report.id}/practice`}><Button size="sm"><Sparkles className="w-3.5 h-3.5" /> {t('report.practiceThisVersion')}</Button></Link>
                     <Button variant="outline" size="sm" onClick={() => { saveSentence({ pattern: report.questionDetails[0].betterAnswerVersion, savedAt: new Date().toISOString() }); toast.success(t("common.saved")); }}>{t('report.saveToSentences')}</Button>
                   </div>
                 </div>

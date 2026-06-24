@@ -6,10 +6,10 @@ import { saveSentence } from "@/lib/mockStorage";
 import { Mail, Users, GitPullRequest, MessageCircle, ArrowRight } from "lucide-react";
 
 const scenarios = [
-  { icon: Users, name: "Daily Standup", desc: "Yesterday / Today / Blockers — concise updates.", progress: 35 },
-  { icon: Mail, name: "Writing Emails", desc: "Status updates, requests, follow-ups.", progress: 20 },
-  { icon: GitPullRequest, name: "Code Review", desc: "Leave clear, polite review comments.", progress: 12 },
-  { icon: MessageCircle, name: "Meetings & Clarification", desc: "Ask for clarification without losing face.", progress: 8 },
+  { icon: Users, name: "Daily Standup", desc: "Yesterday / Today / Blockers — concise updates.", progress: 35, slug: "daily-standup" },
+  { icon: Mail, name: "Writing Emails", desc: "Status updates, requests, follow-ups.", progress: 20, slug: "writing-emails" },
+  { icon: GitPullRequest, name: "Code Review", desc: "Leave clear, polite review comments.", progress: 12, slug: "code-review" },
+  { icon: MessageCircle, name: "Meetings & Clarification", desc: "Ask for clarification without losing face.", progress: 8, slug: "meetings-clarification" },
 ];
 
 const phrases = [
@@ -38,7 +38,12 @@ export default function WorkplaceEnglish() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {scenarios.map((s) => (
-              <div key={s.name} role="button" tabIndex={0} aria-label={t("common.comingSoon")} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toast.info(t("common.comingSoon")); } }}>
+              <Link
+                key={s.name}
+                to={`/workplace-english/scenarios/${s.slug}`}
+                className="panel p-4 hover:border-primary/40 hover:shadow-sm transition block"
+                aria-label={s.name}
+              >
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-md bg-accent text-primary flex items-center justify-center shrink-0">
                     <s.icon className="w-4 h-4" />
@@ -52,7 +57,7 @@ export default function WorkplaceEnglish() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 

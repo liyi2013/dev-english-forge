@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { ArrowRight, MessageSquareCode, Mic, Clock } from "lucide-react";
 
 const scenarios = [
-  { name: "Self-Introduction", desc: "30-second and 90-second versions for tech roles.", level: "B1", progress: 70 },
-  { name: "Project Experience", desc: "Use STAR to describe what you built and why.", level: "B1+", progress: 42 },
-  { name: "Technical Q&A", desc: "Answer system & coding questions in English.", level: "B2", progress: 18 },
-  { name: "Behavioral Questions", desc: "Conflict, leadership, failure stories.", level: "B1", progress: 25 },
-  { name: "Salary & Offer", desc: "Negotiation phrases and clarifying questions.", level: "B2", progress: 0 },
-  { name: "Closing Questions", desc: "Smart questions to ask the interviewer.", level: "B1", progress: 60 },
+  { name: "Self-Introduction", desc: "30-second and 90-second versions for tech roles.", level: "B1", progress: 70, slug: "self-introduction" },
+  { name: "Project Experience", desc: "Use STAR to describe what you built and why.", level: "B1+", progress: 42, slug: "project-experience" },
+  { name: "Technical Q&A", desc: "Answer system & coding questions in English.", level: "B2", progress: 18, slug: "technical-qa" },
+  { name: "Behavioral Questions", desc: "Conflict, leadership, failure stories.", level: "B1", progress: 25, slug: "behavioral-questions" },
+  { name: "Salary & Offer", desc: "Negotiation phrases and clarifying questions.", level: "B2", progress: 0, slug: "salary-offer" },
+  { name: "Closing Questions", desc: "Smart questions to ask the interviewer.", level: "B1", progress: 60, slug: "closing-questions" },
 ];
 
 const banks = [
@@ -47,7 +47,7 @@ export default function InterviewEnglish() {
             <h2 className="text-sm font-semibold mb-3">{t('interview.scenarios')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {scenarios.map((s) => (
-                <div key={s.name} role="button" tabIndex={0} aria-label={t("common.comingSoon")} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toast.info(t("common.comingSoon")); } }}>
+                <Link to={`/interview-english/scenarios/${s.slug}`} key={s.name} className="panel p-4 hover:border-primary/40 hover:shadow-sm transition block" aria-label={s.name}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="text-sm font-semibold">{s.name}</h4>
@@ -59,7 +59,7 @@ export default function InterviewEnglish() {
                     <Progress value={s.progress} />
                     <span className="text-[11px] font-mono text-muted-foreground shrink-0">{s.progress}%</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

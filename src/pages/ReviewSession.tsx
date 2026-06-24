@@ -46,31 +46,28 @@ export default function ReviewSession() {
         answer: r.correctAnswer || r.problem || '',
         source: r.source, mastered: false,
       }));
-      const queue = getReviewQueue().map((r: Record<string, unknown>) => ({
+      const queue = getReviewQueue().map((r) => ({
         id: `queue-${r.id}`, type: 'wrong_answer' as const,
-        title: r.title || '', prompt: r.content || '',
-        answer: r.correctAnswer || r.problem || '',
-        source: r.source || '', mastered: false,
+        title: r.title, prompt: r.title,
+        answer: '', source: r.source, mastered: false,
       }));
       result.push(...mock, ...queue);
     }
 
     if (m === 'vocabulary' || m === 'mixed') {
-      const vocab = getSavedVocabulary().map((v: Record<string, unknown>) => ({
+      const vocab = getSavedVocabulary().map((v) => ({
         id: `vocab-${v.term}`, type: 'vocab' as const,
         title: v.term, prompt: v.term,
-        answer: v.definitionEn || v.definitionZh || '',
-        source: t('review.modeVocabulary'), mastered: false,
+        answer: '', source: t('review.modeVocabulary'), mastered: false,
       }));
       result.push(...vocab);
     }
 
     if (m === 'sentences' || m === 'mixed') {
-      const sents = getSavedSentences().map((s: Record<string, unknown>, i: number) => ({
+      const sents = getSavedSentences().map((s, i) => ({
         id: `sent-${i}`, type: 'sentence' as const,
-        title: s.pattern || '', prompt: s.pattern || '',
-        answer: s.meaningZh || '',
-        source: t('review.modeSentences'), mastered: false,
+        title: s.pattern, prompt: s.pattern,
+        answer: '', source: t('review.modeSentences'), mastered: false,
       }));
       result.push(...sents);
     }
