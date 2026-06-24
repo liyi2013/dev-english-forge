@@ -284,7 +284,7 @@ const enUS: Record<string, string> = {
   'review.backToReview': 'Back to Review',
   'review.sessionTitle': 'Review Session',
   'review.sessionDesc': 'Focus on fixing mistakes, vocabulary, and sentence patterns.',
-  'review.chooseMode': 'Choose Review Mode',
+  'review.sessionSource': 'Review Queue',  'review.chooseMode': 'Choose Review Mode',
   'review.modeWrongAnswers': 'Wrong Answers',
   'review.modeVocabulary': 'Vocabulary',
   'review.modeSentences': 'Sentences',

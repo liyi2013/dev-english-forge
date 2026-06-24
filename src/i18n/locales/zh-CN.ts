@@ -284,7 +284,7 @@ const zhCN: Record<string, string> = {
   'review.backToReview': '返回复盘',
   'review.sessionTitle': '复习会话',
   'review.sessionDesc': '集中修复错题、词汇和句型。',
-  'review.chooseMode': '选择复习模式',
+  'review.sessionSource': '复习队列',  'review.chooseMode': '选择复习模式',
   'review.modeWrongAnswers': '错题复习',
   'review.modeVocabulary': '词汇复习',
   'review.modeSentences': '句型复习',

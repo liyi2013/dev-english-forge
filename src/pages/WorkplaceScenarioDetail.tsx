@@ -8,6 +8,7 @@ import { getWorkplaceScenarioBySlug } from "@/data/mockWorkplaceScenarios";
 import { saveSentence, isSentenceSaved, removeSentence } from "@/lib/mockStorage";
 import { getMockTopics } from "@/data/mockTopics";
 import { ArrowLeft, Clock, Target, BookOpen, CheckCircle2, AlertCircle, Save, MessageSquare, ChevronRight, Sparkles } from "lucide-react";
+import type { WorkplaceScenario } from "@/types/workplaceScenario";
 
 function MiniDrillSection({ drills, t }: { drills: import('@/types/workplaceScenario').WorkplaceMiniDrill[]; t: (key: string) => string }) {
   const [activeDrill, setActiveDrill] = useState<string | null>(null);
@@ -106,13 +107,10 @@ function MiniDrillSection({ drills, t }: { drills: import('@/types/workplaceScen
   );
 }
 
-export default function WorkplaceScenarioDetail() {
-  const { slug } = useParams<{ slug: string }>();
+function WorkplaceScenarioDetailContent({ scenario }: { scenario: WorkplaceScenario }) {
   const { t, locale } = useI18n();
-  const scenario = slug ? getWorkplaceScenarioBySlug(slug) : undefined;
 
   const [sentenceSaves, setSentenceSaves] = useState<Record<string, boolean>>(() => {
-    if (!scenario) return {};
     const saves: Record<string, boolean> = {};
     scenario.sentencePatterns.forEach((sp) => {
       saves[sp.pattern] = isSentenceSaved(sp.pattern);
@@ -121,7 +119,6 @@ export default function WorkplaceScenarioDetail() {
   });
 
   const [phraseSaves, setPhraseSaves] = useState<Record<string, boolean>>(() => {
-    if (!scenario) return {};
     const saves: Record<string, boolean> = {};
     scenario.usefulPhrases.forEach((p) => {
       saves[p.en] = isSentenceSaved(p.en);
@@ -131,7 +128,6 @@ export default function WorkplaceScenarioDetail() {
   const [toneChecked, setToneChecked] = useState<Set<number>>(new Set());
 
   const topics = useMemo(() => {
-    if (!scenario) return [];
     return getMockTopics().filter((tp) => scenario.relatedTopics.includes(tp.slug));
   }, [scenario]);
 
@@ -166,23 +162,6 @@ export default function WorkplaceScenarioDetail() {
     setToneChecked(next);
     if (next.has(idx)) toast.success(t('workplaceScenario.tipChecked'));
   }, [toneChecked, t]);
-
-  if (!scenario) {
-    return (
-      <div>
-        <div className="mb-4">
-          <Link to="/workplace-english" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
-            <ArrowLeft className="w-3.5 h-3.5" /> {t('workplaceScenario.backToWorkplace')}
-          </Link>
-        </div>
-        <EmptyState
-          title={t('workplaceScenario.scenarioNotFound')}
-          description={t('workplaceScenario.scenarioNotFoundDesc')}
-          action={<Link to="/workplace-english"><Button>{t('common.back')}</Button></Link>}
-        />
-      </div>
-    );
-  }
 
   const scenarioTitle = locale === 'zh-CN' ? scenario.titleZh : scenario.title;
   const scenarioDesc = locale === 'zh-CN' ? scenario.descriptionZh : scenario.description;
@@ -389,4 +368,29 @@ export default function WorkplaceScenarioDetail() {
       </div>
     </div>
   );
+}
+
+export default function WorkplaceScenarioDetail() {
+  const { slug } = useParams<{ slug: string }>();
+  const { t } = useI18n();
+  const scenario = slug ? getWorkplaceScenarioBySlug(slug) : undefined;
+
+  if (!scenario) {
+    return (
+      <div>
+        <div className="mb-4">
+          <Link to="/workplace-english" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
+            <ArrowLeft className="w-3.5 h-3.5" /> {t('workplaceScenario.backToWorkplace')}
+          </Link>
+        </div>
+        <EmptyState
+          title={t('workplaceScenario.scenarioNotFound')}
+          description={t('workplaceScenario.scenarioNotFoundDesc')}
+          action={<Link to="/workplace-english"><Button>{t('common.back')}</Button></Link>}
+        />
+      </div>
+    );
+  }
+
+  return <WorkplaceScenarioDetailContent key={scenario.slug} scenario={scenario} />;
 }

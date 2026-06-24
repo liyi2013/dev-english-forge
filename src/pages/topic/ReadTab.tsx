@@ -6,13 +6,18 @@ import type { LearningTopic } from "@/types/learning";
 import { BookOpen, Volume2, VolumeX, Lightbulb, CheckCircle2 } from "lucide-react";
 
 export function ReadTab({ topic }: { topic: LearningTopic }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [completed, setCompleted] = useState(() => isLessonCompleted(topic.slug));
   const [understandingAnswer, setUnderstandingAnswer] = useState("");
   const [understandingResult, setUnderstandingResult] = useState<boolean | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  const check = topic.understandingCheck;
+  const checkQuestion = check
+    ? (locale === 'zh-CN' ? check.questionZh : check.question)
+    : '';
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
@@ -67,7 +72,11 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
   };
 
   const handleCheckUnderstanding = () => {
-    const hasKeyword = topic.understandingCheck.keywords.some((k) => understandingAnswer.toLowerCase().includes(k));
+    if (!check || !check.keywords || check.keywords.length === 0) {
+      setUnderstandingResult(false);
+      return;
+    }
+    const hasKeyword = check.keywords.some((k) => understandingAnswer.toLowerCase().includes(k));
     setUnderstandingResult(hasKeyword);
   };
 
@@ -108,7 +117,7 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
             <Lightbulb className="w-3.5 h-3.5" /> {t('topic.understandingCheck')}
           </div>
           <p className="text-sm font-medium text-foreground">
-            What does <span className="font-mono">idempotent</span> mean in your own words?
+            {checkQuestion}
           </p>
           <textarea
             value={understandingAnswer}
@@ -120,8 +129,8 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
           {understandingResult !== null && (
             <p className={`mt-2 text-xs ${understandingResult ? 'text-success' : 'text-warning'}`}>
               {understandingResult
-                ? 'Great! Idempotent means the result is the same no matter how many times you make the request.'
-                : 'Hint: Think about what happens when you make the same request multiple times.'}
+                ? (check?.successFeedback || '')
+                : (check?.failureHint || '')}
             </p>
           )}
           <div className="flex gap-2 mt-2">

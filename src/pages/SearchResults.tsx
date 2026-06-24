@@ -10,12 +10,29 @@ import { getMockReports } from "@/data/mockReports";
 import { getSavedSentences, getCompletedReports, getGeneratedReports, saveVocabulary, removeVocabulary, isVocabSaved } from "@/lib/mockStorage";
 import { toast } from "sonner";
 import { BookOpen, Sparkles, MessageSquare, Mic, ArrowRight, Search, TrendingUp } from "lucide-react";
+import type { InterviewReport, InterviewQuestionItem } from "@/types/interview";
 
 type FilterGroup = 'All' | 'Topics' | 'Vocabulary' | 'Questions' | 'Reports' | 'Sentences';
 
 const popularSearches = [
   "Redis", "cache", "API", "Docker", "database", "CI/CD", "STAR", "idempotent",
 ];
+
+function includesQuery(value: unknown, query: string): boolean {
+  if (typeof value === 'string') {
+    return value.toLowerCase().includes(query);
+  }
+  if (typeof value === 'number') {
+    return String(value).includes(query);
+  }
+  if (Array.isArray(value)) {
+    return value.some((v) => includesQuery(v, query));
+  }
+  if (value && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).some((v) => includesQuery(v, query));
+  }
+  return false;
+}
 
 export default function SearchResults() {
   const { t } = useI18n();
@@ -49,7 +66,8 @@ export default function SearchResults() {
 
   const questionItems = useMemo(() => {
     if (!q) return [];
-    const allQuestions = [
+    const query = q.toLowerCase();
+    const allQuestions: InterviewQuestionItem[] = [
       ...getQuestionsByMode('quick'),
       ...getQuestionsByMode('jd'),
       ...getRecentSessions().flatMap((s) => s.questions),
@@ -58,7 +76,12 @@ export default function SearchResults() {
     return allQuestions.filter((qItem) => {
       if (seen.has(qItem.question)) return false;
       seen.add(qItem.question);
-      return qItem.question.toLowerCase().includes(q.toLowerCase());
+      return (
+        includesQuery(qItem.question, query) ||
+        includesQuery(qItem.type, query) ||
+        includesQuery(qItem.hint, query) ||
+        includesQuery(qItem.userAnswer, query)
+      );
     });
   }, [q]);
 
@@ -69,29 +92,61 @@ export default function SearchResults() {
     const mockReports = getMockReports();
     const generated = getGeneratedReports();
 
-    // Build a full report map from mock reports for deeper content search
-    const mockReportMap = new Map<string, import("@/types/interview").InterviewReport>();
-    mockReports.forEach((r) => mockReportMap.set(r.id, r));
+    // Build full report map from all available sources
+    const fullReportMap = new Map<string, Partial<InterviewReport>>();
+    mockReports.forEach((r) => fullReportMap.set(r.id, r));
 
-    const deepSearch = (item: { id: string; date?: string; overallScore?: number; title?: string }): boolean => {
-      if (item.title?.toLowerCase().includes(query)) return true;
-      if (item.overallScore != null && String(item.overallScore).includes(q)) return true;
-      const full = mockReportMap.get(item.id);
+    // Add generated reports that are structurally complete
+    if (Array.isArray(generated)) {
+      generated.forEach((r: Record<string, unknown>) => {
+        if (r && typeof r === 'object' && r.id) {
+          fullReportMap.set(r.id as string, r as unknown as Partial<InterviewReport>);
+        }
+      });
+    }
+
+    const deepSearch = (id: string): boolean => {
+      const full = fullReportMap.get(id);
       if (!full) return false;
-      return (
-        full.weakPoints.some((wp: string) => wp.toLowerCase().includes(query)) ||
-        full.questionDetails.some((qd) =>
-          qd.gapAnalysis.some((g: string) => g.toLowerCase().includes(query)) ||
-          (qd.betterAnswerVersion || '').toLowerCase().includes(query) ||
-          (qd.idealAnswer || '').toLowerCase().includes(query)
-        ) ||
-        full.recommendedLearning.some((rl) =>
-          rl.title.toLowerCase().includes(query) || rl.desc.toLowerCase().includes(query)
-        )
-      );
+      // Search title
+      if (includesQuery(full.title, query)) return true;
+      // Search score fields
+      if (full.overallScore != null && includesQuery(full.overallScore, query)) return true;
+      // Search config fields
+      const config = full.config;
+      if (config && typeof config === 'object') {
+        if (includesQuery(config.role, query)) return true;
+        if (includesQuery(config.difficulty, query)) return true;
+      }
+      // Search strong/weak points
+      if (Array.isArray(full.strongPoints) && full.strongPoints.some((sp: string) => includesQuery(sp, query))) return true;
+      if (Array.isArray(full.weakPoints) && full.weakPoints.some((wp: string) => includesQuery(wp, query))) return true;
+      // Search question details
+      if (Array.isArray(full.questionDetails)) {
+        for (const qd of full.questionDetails) {
+          if (qd && typeof qd === 'object') {
+            if (includesQuery((qd as Record<string, unknown>).question, query)) return true;
+            if (includesQuery((qd as Record<string, unknown>).userAnswer, query)) return true;
+            if (includesQuery((qd as Record<string, unknown>).gapAnalysis, query)) return true;
+            if (includesQuery((qd as Record<string, unknown>).missingKeyPoints, query)) return true;
+            if (includesQuery((qd as Record<string, unknown>).betterAnswerVersion, query)) return true;
+            if (includesQuery((qd as Record<string, unknown>).idealAnswer, query)) return true;
+          }
+        }
+      }
+      // Search recommended learning
+      if (Array.isArray(full.recommendedLearning)) {
+        for (const rl of full.recommendedLearning) {
+          if (rl && typeof rl === 'object') {
+            if (includesQuery((rl as Record<string, unknown>).title, query)) return true;
+            if (includesQuery((rl as Record<string, unknown>).desc, query)) return true;
+          }
+        }
+      }
+      return false;
     };
 
-    const all = [
+    const all: { id: string; date?: string; overallScore?: number; title: string }[] = [
       ...completed.map((r) => {
         const title = `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`;
         return { id: r.id, date: r.date, overallScore: r.overallScore, title };
@@ -110,7 +165,12 @@ export default function SearchResults() {
     all.forEach((item) => {
       if (!byId.has(item.id)) byId.set(item.id, item);
     });
-    return Array.from(byId.values()).filter((r) => deepSearch(r));
+    return Array.from(byId.values()).filter((r) => {
+      // Quick check title/score first, then deep search
+      if (includesQuery(r.title, query)) return true;
+      if (r.overallScore != null && includesQuery(r.overallScore, query)) return true;
+      return deepSearch(r.id);
+    });
   }, [q, t]);
 
   const sentenceItems = useMemo(() => {
@@ -178,15 +238,14 @@ export default function SearchResults() {
         title={t('search.title')}
         subtitle={`"${q}"`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`chip transition ${filter === f ? 'bg-primary text-primary-foreground' : ''}`}
+                className={`chip text-xs transition ${filter === f ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}
               >
-                {t(f === 'All' ? 'common.all' : f === 'Topics' ? 'search.topicsLabel' : f === 'Vocabulary' ? 'search.termsLabel' : f === 'Questions' ? 'search.qaLabel' : f === 'Reports' ? 'search.pastSessions' : 'search.sentencesLabel')}
-                <span className="text-[10px] opacity-70 ml-1">{totals[f]}</span>
+                {t(`search.filter${f}`)} ({totals[f]})
               </button>
             ))}
           </div>
@@ -194,15 +253,36 @@ export default function SearchResults() {
       />
 
       {totals.All === 0 ? (
-        <EmptyState title={t('common.noResults')} description={`${t('search.noResultsFor')} "${q}"`} />
+        <div className="panel p-8 text-center">
+          <Search className="w-8 h-8 mx-auto text-muted-foreground/30" />
+          <EmptyState
+            title={t('search.noResults')}
+            description={`${t('search.noResultsDesc')} "${q}"`}
+          />
+          {popularSearches.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground mb-2">{t('search.tryThese')}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {popularSearches.slice(0, 4).map((term) => (
+                  <Link key={term} to={`/search?q=${encodeURIComponent(term)}`}>
+                    <Button variant="outline" size="sm">{term}</Button>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
-        <div className="max-w-3xl space-y-6">
+        <div className="space-y-4">
           {(filter === 'All' || filter === 'Topics') && topics.length > 0 && (
             <Panel title={t('search.topics')} description={`${topics.length} ${t('search.matchingTopics')}`} action={<span className="chip"><BookOpen className="w-3 h-3" /> {t('search.topicsLabel')}</span>}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 -my-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {topics.map((t) => (
-                  <Link key={t.slug} to={`/technical-english/${t.slug}`} className="panel p-3 hover:border-primary/40 transition">
-                    <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">{t.level}</span>
+                  <Link key={t.slug} to={`/technical-english/${t.slug}`} className="panel p-4 hover:border-primary/30 transition">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>{t.progress}%</span>
+                    </div>
                     <h4 className="mt-2 text-sm font-semibold"><Highlight text={t.title} q={q} /></h4>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed"><Highlight text={t.explainGoal} q={q} /></p>
                   </Link>

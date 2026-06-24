@@ -95,7 +95,7 @@ export default function ReviewSession() {
       const sents = getSavedSentences().map((s, i) => {
         const lookup = sentLookup.get(s.pattern);
         return {
-          id: `sent-\${i}`, type: 'sentence' as const,
+          id: `sent-${encodeURIComponent(s.pattern || String(i))}`, type: 'sentence' as const,
           title: s.pattern, prompt: `Practice using this pattern: "${s.pattern}"`,
           answer: lookup || `Saved sentence pattern: ${s.pattern}`,
           source: t('review.modeSentences'), mastered: false,
