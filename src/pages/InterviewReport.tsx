@@ -126,7 +126,7 @@ export default function InterviewReport() {
         subtitle={`${report.config.role} · ${report.config.difficulty} · ${report.config.questionCount} ${t('ai.question')} · ${report.config.duration}`}
         actions={
           <>
-            <Button variant="outline" onClick={() => toast.success("Mock PDF export ready")}><Download className="w-3.5 h-3.5" /> {t('report.exportPdf')}</Button>
+            <Button variant="outline" onClick={() => toast.success(t("report.exportPdf"))}><Download className="w-3.5 h-3.5" /> {t('report.exportPdf')}</Button>
             <Link to="/ai-interview"><Button variant="outline"><RotateCcw className="w-3.5 h-3.5" /> {t('report.newSession')}</Button></Link>
           </>
         }

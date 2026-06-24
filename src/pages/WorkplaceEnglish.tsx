@@ -1,4 +1,5 @@
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
+import { Link } from "react-router-dom";
 import { useI18n } from "@/i18n";
 import { toast } from "sonner";
 import { Mail, Users, GitPullRequest, MessageCircle, ArrowRight } from "lucide-react";
@@ -31,7 +32,7 @@ export default function WorkplaceEnglish() {
               <h3 className="mt-1.5 text-lg font-semibold">Ask for clarification in a meeting</h3>
               <p className="text-sm text-muted-foreground mt-1">Polite phrases, follow-ups, and tone control.</p>
             </div>
-            <Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button>
+            <Link to="/learning"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -62,7 +63,7 @@ export default function WorkplaceEnglish() {
                     <p className="text-sm font-medium">{p.en}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{p.cn}</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => toast.success(t('common.saved'))}>
+                  <Button variant="ghost" size="sm" onClick={() => { saveSentence({ pattern: p.en, savedAt: new Date().toISOString() }); toast.success(t('common.saved')); }}>
                     {t('workplace.savePhrase')}
                   </Button>
                 </li>

@@ -106,7 +106,7 @@ export default function Learning() {
       </div>
 
       <div className="mt-8">
-        <Panel title={t('learning.recommended')} action={<Button variant="ghost" size="sm" onClick={() => toast.success("Refreshed")}>{t('common.refresh')}</Button>}>
+        <Panel title={t('learning.recommended')} action={<Button variant="ghost" size="sm" onClick={() => toast.success(t("common.refresh"))}>{t('common.refresh')}</Button>}>
           <ul className="divide-y divide-border -my-2">
             {recommended.map((r) => (
               <li key={r.title} className="flex items-center justify-between py-3 group">

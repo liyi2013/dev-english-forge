@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { Panel, Progress, Button, Stat } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { getDashboardData } from "@/data/mockDashboard";
@@ -7,6 +9,7 @@ import { Check, Flame, TrendingUp, Calendar, ArrowRight, Target, Mic } from "luc
 export default function Dashboard() {
   const { t, locale } = useI18n();
   const data = getDashboardData();
+  const [doneItems, setDoneItems] = useState<Set<string>>(new Set());
 
   function formatToday() {
     return new Date().toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
@@ -80,11 +83,11 @@ export default function Dashboard() {
                 <li key={it.label} className="flex items-center justify-between py-3 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className={`w-4 h-4 shrink-0 rounded border flex items-center justify-center ${it.done ? "bg-success border-success text-white" : "border-border bg-card"}`}>
-                      {it.done && <Check className="w-3 h-3" strokeWidth={3} />}
+                      {(it.done || doneItems.has(it.label)) && <Check className="w-3 h-3" strokeWidth={3} />}
                     </span>
-                    <span className={`text-sm truncate ${it.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{it.label}</span>
+                    <span className={`text-sm truncate ${(it.done || doneItems.has(it.label)) ? "text-muted-foreground line-through" : "text-foreground"}`}>{it.label}</span>
                   </div>
-                  <button className="text-xs text-primary hover:underline shrink-0">{it.done ? t('common.done') : t('common.start')}</button>
+                  <button className="text-xs text-primary hover:underline shrink-0" onClick={() => { setDoneItems(prev => new Set(prev).add(it.label)); toast.success(t("common.completed")); }}>{it.done || doneItems.has(it.label) ? t('common.done') : t('common.start')}</button>
                 </li>
               ))}
             </ul>

@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { toast } from "sonner";
 
 const navItems = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },

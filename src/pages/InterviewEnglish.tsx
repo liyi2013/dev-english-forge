@@ -38,7 +38,7 @@ export default function InterviewEnglish() {
                 <h3 className="mt-1.5 text-lg font-semibold">Explain your recent project</h3>
                 <p className="text-sm text-muted-foreground mt-1">Use the STAR pattern. Aim for 90 seconds. Voice + AI feedback.</p>
               </div>
-              <Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button>
+              <Link to="/learning"><Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button></Link>
             </div>
             <Progress value={28} className="mt-4" />
           </div>
@@ -74,7 +74,7 @@ export default function InterviewEnglish() {
                   </div>
                   <div className="flex items-center gap-3 text-muted-foreground text-xs">
                     <span>{b.count} {t('interview.questions')}</span>
-                    <Button variant="outline" size="sm">{t('common.start')}</Button>
+                    <Link to="/ai-interview"><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
                   </div>
                 </li>
               ))}
