@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +18,8 @@ import Profile from "./pages/Profile";
 import SearchResults from "./pages/SearchResults";
 import TechnicalPathDetail from "./pages/TechnicalPathDetail";
 import NotFound from "./pages/NotFound";
+import LearningPathDetail from "./pages/LearningPathDetail";
+import ReviewSession from "./pages/ReviewSession";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
           <Route element={<AppLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/learning" element={<Learning />} />
+            <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
             <Route path="/technical-english" element={<TechnicalEnglish />} />
             <Route path="/technical-english/paths/:pathSlug" element={<TechnicalPathDetail />} />
             <Route path="/technical-english/:topicSlug" element={<TopicDetail />} />
@@ -40,6 +43,7 @@ const App = () => (
             <Route path="/ai-interview/room" element={<InterviewRoom />} />
             <Route path="/ai-interview/report" element={<InterviewReport />} />
             <Route path="/ai-interview/report/:reportId" element={<InterviewReport />} />
+            <Route path="/review/session" element={<ReviewSession />} />
             <Route path="/review" element={<Review />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/search" element={<SearchResults />} />

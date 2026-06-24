@@ -14,6 +14,8 @@ import AppLayout from "@/components/AppLayout";
 import AIInterviewLobby from "@/pages/AIInterviewLobby";
 import Review from "@/pages/Review";
 import { SpeakTab } from "@/pages/topic/SpeakTab";
+import LearningPathDetail from "@/pages/LearningPathDetail";
+import ReviewSession from "@/pages/ReviewSession";
 import { toast } from "sonner";
 
 vi.mock("sonner", () => ({
@@ -387,3 +389,175 @@ describe("Button clickability — full audit", () => {
   });
   it("Profile renders without crash", () => { renderWP(<Profile />); });
 });
+
+  // =========== Learning Path Detail page ===========
+  describe("LearningPathDetail", () => {
+    it("Learning page path cards link to learning path detail", async () => {
+      renderWP(<Learning />);
+      // Find the Continue buttons wrapped in Link - each should link to /learning/{slug}
+      const continueLinks = screen.getAllByText("继续");
+      expect(continueLinks.length).toBeGreaterThanOrEqual(3);
+      // First Continue should link to /learning/backend-english
+      const link1 = continueLinks[0].closest("a");
+      expect(link1).toBeDefined();
+      expect(link1!.getAttribute("href")).toBe("/learning/backend-english");
+      // Second Continue should link to /learning/interview-english
+      const link2 = continueLinks[1].closest("a");
+      expect(link2).toBeDefined();
+      expect(link2!.getAttribute("href")).toBe("/learning/interview-english");
+      // Third Continue should link to /learning/workplace-english
+      const link3 = continueLinks[2].closest("a");
+      expect(link3).toBeDefined();
+      expect(link3!.getAttribute("href")).toBe("/learning/workplace-english");
+    });
+
+    it("shows path detail with modules for backend-english", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/learning/backend-english"]}>
+            <Routes>
+              <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Should show path name
+      expect(screen.getByText("后端英语")).toBeDefined();
+      // Should show milestone
+      expect(screen.getAllByText(/里程碑：用 3 分钟/i).length).toBeGreaterThanOrEqual(1);
+      // Should show modules
+      expect(screen.getAllByText("RESTful API").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("数据库").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Redis 缓存").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("RabbitMQ 消息队列").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("shows recommended topics for backend-english", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/learning/backend-english"]}>
+            <Routes>
+              <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Should show recommended topics section
+      await waitFor(() => {
+        expect(screen.getByText("推荐主题")).toBeDefined();
+      });
+      // RESTful API topic card should be visible
+      await waitFor(() => {
+        // Find the RESTful API text that's inside a TopicCard link
+        const topicCard = screen.getByText("RESTful API 设计");
+        expect(topicCard).toBeDefined();
+      });
+    });
+
+    it("topic card links to technical-english topic page", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/learning/backend-english"]}>
+            <Routes>
+              <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      await waitFor(() => {
+        const restfulCards = screen.getAllByText("RESTful API");
+        // Find the one that's inside a link to /technical-english/restful-api
+        const cardLink = restfulCards.find(el => el.closest("a")?.getAttribute("href")?.includes("/technical-english/restful-api"));
+        expect(cardLink).toBeDefined();
+        expect(cardLink!.closest("a")!.getAttribute("href")).toContain("/technical-english/restful-api");
+      });
+    });
+
+    it("shows empty state for unknown path", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/learning/nonexistent-path"]}>
+            <Routes>
+              <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("路径未找到")).toBeDefined();
+    });
+  });
+
+  // =========== Review Session page ===========
+  describe("ReviewSession", () => {
+    it("Review page has link to /review/session", () => {
+      renderWP(<Review />);
+      const sessionLink = screen.getByText("开始复习").closest("a");
+      expect(sessionLink).toBeDefined();
+      expect(sessionLink!.getAttribute("href")).toBe("/review/session");
+    });
+
+    it("shows mode selection cards", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/review/session"]}>
+            <Routes>
+              <Route path="/review/session" element={<ReviewSession />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      expect(screen.getByText("错题复习")).toBeDefined();
+      expect(screen.getByText("词汇复习")).toBeDefined();
+      expect(screen.getByText("句型复习")).toBeDefined();
+      expect(screen.getByText("混合复习")).toBeDefined();
+    });
+
+    it("clicking wrong answers mode starts session", async () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/review/session"]}>
+            <Routes>
+              <Route path="/review/session" element={<ReviewSession />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const wrongModeBtn = screen.getByText("错题复习");
+      fireEvent.click(wrongModeBtn);
+      // Should enter session mode with progress bar
+      await waitFor(() => {
+        expect(screen.getByText("下一题")).toBeDefined();
+      });
+    });
+
+    it("back link goes to /review", () => {
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/review/session"]}>
+            <Routes>
+              <Route path="/review/session" element={<ReviewSession />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      const backLink = screen.getByText("返回复盘").closest("a");
+      expect(backLink).toBeDefined();
+      expect(backLink!.getAttribute("href")).toBe("/review");
+    });
+
+    it("shows empty state when no review items exist", () => {
+      // Clear localStorage to ensure no items
+      localStorage.clear();
+      render(
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/review/session"]}>
+            <Routes>
+              <Route path="/review/session" element={<ReviewSession />} />
+            </Routes>
+          </MemoryRouter>
+        </I18nProvider>
+      );
+      // Still in mode selection, should see the modes
+      expect(screen.getByText("错题复习")).toBeDefined();
+    });
+  });

@@ -95,7 +95,7 @@ export default function Learning() {
 
               <div className="mt-4 pt-3 border-t border-border">
                 <p className="text-[11px] text-muted-foreground leading-snug">{p.milestone}</p>
-                <Link to={`/${p.slug.replace('backend', 'technical').replace('interview', 'interview').replace('workplace', 'workplace')}`}>
+                <Link to={`/learning/${p.slug}`}>
                   <Button variant="outline" size="sm" className="mt-3 w-full">
                     {t('common.continue')} <ArrowRight className="w-3.5 h-3.5" />
                   </Button>

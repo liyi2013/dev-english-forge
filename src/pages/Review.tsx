@@ -385,14 +385,15 @@ export default function Review() {
               <li className="flex justify-between"><span>{t('review.dueTomorrow')}</span><span className="font-mono text-muted-foreground">7</span></li>
               <li className="flex justify-between"><span>{t('review.thisWeek')}</span><span className="font-mono text-muted-foreground">18</span></li>
             </ul>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4 w-full"
-              onClick={() => toast.info(t('review.sessionComingSoon'))}
-            >
-              {t('review.startSession')}
-            </Button>
+            <Link to="/review/session" className="block mt-4 w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                {t('review.startSession')}
+              </Button>
+            </Link>
           </Panel>
         </div>
       </div>
