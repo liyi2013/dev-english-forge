@@ -386,3 +386,252 @@ describe("WorkplaceScenarioDetail route switch", () => {
     expect(screen.queryByText("每日站会")).toBeNull();
   });
 });
+
+// =========== 5. Dashboard i18n field tests ===========
+import Dashboard from "@/pages/Dashboard";
+import AppLayout from "@/components/AppLayout";
+
+describe("Dashboard i18n fields", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  function renderDash(locale?: string) {
+    if (locale) {
+      memLS._store["devenglish_locale"] = locale;
+    }
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+  }
+
+  it("default zh-CN shows Chinese todayFocus title", () => {
+    renderDash();
+    expect(screen.getByText("用英语解释 Redis 缓存问题")).toBeDefined();
+  });
+
+  it("default zh-CN shows Chinese todayPlan labels", () => {
+    renderDash();
+    expect(screen.getByText("复习 10 个技术词汇")).toBeDefined();
+  });
+
+  it("default zh-CN shows Chinese upcoming title", () => {
+    renderDash();
+    expect(screen.getByText("模拟面试 — 后端")).toBeDefined();
+  });
+
+  it("default zh-CN does not show English todayFocus title", () => {
+    renderDash();
+    expect(screen.queryByText("Explain Redis cache problems in English.")).toBeNull();
+  });
+});
+
+// =========== 6. i18n en-US static import test ===========
+describe("i18n en-US static import", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("renders English text without raw i18n keys when locale is en-US", () => {
+    memLS._store["devenglish_locale"] = "en-US";
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AppLayout />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+    expect(screen.queryByText("nav.dashboard")).toBeNull();
+    expect(screen.queryByText("profile.title")).toBeNull();
+    expect(screen.getAllByText("Dashboard").length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// =========== 7. Review queue enriched fields ===========
+import InterviewReport from "@/pages/InterviewReport";
+import Review from "@/pages/Review";
+
+describe("Review queue enriched fields", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("interview report adds review items with enriched data", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/ai-interview/report/report-1"]}>
+          <Routes>
+            <Route path="/ai-interview/report/:reportId" element={<InterviewReport />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("加入复习队列")).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByText("加入复习队列"));
+
+    await waitFor(() => {
+      const queue = JSON.parse(memLS._store["devenglish_review_queue"] || "[]");
+      expect(queue.length).toBeGreaterThanOrEqual(1);
+      const first = queue[0];
+      expect(first.reportId).toBeDefined();
+      expect(first.userAnswer).toBeDefined();
+      expect(first.correctAnswer).toBeDefined();
+    });
+  });
+
+  it("review page shows enriched queue item with user answer", async () => {
+    // Pre-populate review queue with enriched data
+    memLS._store["devenglish_review_queue"] = JSON.stringify([{
+      id: "review-test-1",
+      type: "wrong_answer",
+      title: "WeakPoint-Enriched-Test-Word",
+      source: "Interview · Backend Developer",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      reportId: "report-1",
+      questionIndex: 1,
+      userAnswer: "I would check the cache keys and the expiration time.",
+      problem: "Answer is too short. Aim for 2-3 sentences.",
+      correctAnswer: "A better answer would include monitoring hit rate and eviction.",
+      drillRoute: "/ai-interview/report/report-1/practice",
+    }]);
+
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/review"]}>
+          <Routes>
+            <Route path="/review" element={<Review />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("WeakPoint-Enriched-Test-Word")).toBeDefined();
+    });
+  });
+
+  it("review page rewrite answer links to drillRoute when available", async () => {
+    memLS._store["devenglish_review_queue"] = JSON.stringify([{
+      id: "review-test-2",
+      type: "wrong_answer",
+      title: "DrillRoute-Test-Word",
+      source: "Interview · Backend Developer",
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      reportId: "report-1",
+      drillRoute: "/ai-interview/report/report-1/practice",
+      userAnswer: "Some answer",
+      problem: "Vocabulary was repetitive",
+      correctAnswer: "Better vocabulary here",
+    }]);
+
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/review"]}>
+          <Routes>
+            <Route path="/review" element={<Review />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      // The queue item title should be visible
+      expect(screen.getByText("DrillRoute-Test-Word")).toBeDefined();
+    });
+    // The rewrite answer link should point to the drill route
+    const rewriteLinks = Array.from(document.querySelectorAll('a[href="/ai-interview/report/report-1/practice"]'));
+    expect(rewriteLinks.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// =========== 8. LearningPathDetail route tests ===========
+import LearningPathDetail from "@/pages/LearningPathDetail";
+
+describe("LearningPathDetail routes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("interview-english path shows Project story STAR with link to interview scenario", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/learning/interview-english"]}>
+          <Routes>
+            <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("面试英语")).toBeDefined();
+    });
+
+    expect(screen.getByText("项目经历 (STAR)")).toBeDefined();
+
+    const continueLinks = Array.from(document.querySelectorAll('a[href="/interview-english/scenarios/project-experience"]'));
+    expect(continueLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("workplace-english path has Daily standup link to workplace scenario", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/learning/workplace-english"]}>
+          <Routes>
+            <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("职场英语")).toBeDefined();
+    });
+
+    expect(screen.getByText("每日站会")).toBeDefined();
+
+    const continueLinks = Array.from(document.querySelectorAll('a[href="/workplace-english/scenarios/daily-standup"]'));
+    expect(continueLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("RESTful API module links to technical-english", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/learning/backend-english"]}>
+          <Routes>
+            <Route path="/learning/:pathSlug" element={<LearningPathDetail />} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("后端英语")).toBeDefined();
+    });
+
+    const openLinks = Array.from(document.querySelectorAll('a[href="/technical-english/restful-api"]'));
+    expect(openLinks.length).toBeGreaterThanOrEqual(1);
+  });
+});

@@ -23,7 +23,6 @@ export default function InterviewReport() {
     if (reportId) {
       return getReportById(reportId);
     }
-    // No reportId: try to find latest generated report from localStorage
     try {
       const raw = localStorage.getItem('devenglish_generated_reports');
       if (raw) {
@@ -33,7 +32,6 @@ export default function InterviewReport() {
         }
       }
     } catch { /* ignore */ }
-    // Fallback to first static mock report
     return getReportById('report-1');
   }, [reportId]);
 
@@ -62,8 +60,23 @@ export default function InterviewReport() {
       return;
     }
 
-    // Add only missing weak points
+    // Add weak points with enriched question detail data
     missingWeakPoints.forEach((wp) => {
+      // Match weak point to question detail (heuristic: search for keyword overlap)
+      let matchedDetail = report.questionDetails[0];
+      if (report.questionDetails.length > 0) {
+        for (const qd of report.questionDetails) {
+          const allText = [
+            qd.question, qd.userAnswer, qd.gapAnalysis?.join(' '),
+            qd.missingKeyPoints?.join(' '),
+          ].join(' ').toLowerCase();
+          if (allText.includes(wp.toLowerCase())) {
+            matchedDetail = qd;
+            break;
+          }
+        }
+      }
+
       addToReviewQueue({
         id: `review-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: 'wrong_answer',
@@ -71,10 +84,15 @@ export default function InterviewReport() {
         source,
         status: 'pending',
         createdAt: new Date().toISOString(),
+        reportId: report.id,
+        questionIndex: matchedDetail?.questionIndex,
+        userAnswer: matchedDetail?.userAnswer,
+        problem: matchedDetail?.gapAnalysis?.join(' '),
+        correctAnswer: matchedDetail?.betterAnswerVersion || matchedDetail?.idealAnswer,
+        drillRoute: `/ai-interview/report/${report.id}/practice`,
       });
     });
 
-    // Only add report if it does not already exist
     if (!reportExists) {
       addReport({
         id: report.id,
@@ -87,7 +105,6 @@ export default function InterviewReport() {
     toast.success(t('report.addedToReviewQueue'));
   };
 
-  // Empty state when no report found
   if (!report) {
     return (
       <div>
@@ -137,31 +154,24 @@ export default function InterviewReport() {
           <Panel padded={false}>
             <div className="p-6 text-center">
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">{t('report.overallScore')}</div>
-              <div className="relative inline-flex items-center justify-center mt-3">
-                <svg width="140" height="140" viewBox="0 0 140 140" className="-rotate-90">
-                  <circle cx="70" cy="70" r="60" stroke="hsl(var(--secondary))" strokeWidth="10" fill="none" />
-                  <circle
-                    cx="70" cy="70" r="60"
-                    stroke="hsl(var(--primary))" strokeWidth="10" fill="none"
-                    strokeDasharray={`${(report.overallScore / 100) * 377} 377`}
-                    strokeLinecap="round"
-                  />
+              <div className="relative inline-flex items-center justify-center mt-2">
+                <svg className="w-28 h-28" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="hsl(var(--secondary))" strokeWidth="2" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeDasharray={`${report.overallScore} 100`} strokeLinecap="round" transform="rotate(-90 18 18)" />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-semibold tracking-tight">{report.overallScore}</span>
-                  <span className="text-[11px] text-muted-foreground">/ 100</span>
-                </div>
+                <span className="absolute text-2xl font-bold font-mono">{report.overallScore}</span>
               </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {report.overallScore >= 80 ? t('report.greatScore') :
-                 report.overallScore >= 70 ? t('report.solidScore') :
-                 t('report.keepPracticing')}
-              </p>
-            </div>
-            <div className="border-t border-border p-5">
-              <ScoreBreakdown scores={scoreItems} />
+              <p className="text-xs text-muted-foreground mt-2">{t('report.outOf100')}</p>
             </div>
           </Panel>
+
+          <div className="mt-4">
+            <Panel title={t('report.scoreBreakdown')} padded={false}>
+              <div className="p-5">
+                <ScoreBreakdown scores={scoreItems} />
+              </div>
+            </Panel>
+          </div>
         </div>
 
         {/* Right column */}
@@ -189,7 +199,6 @@ export default function InterviewReport() {
             </Panel>
           </div>
 
-          {/* Answer deep-dive for first question */}
           {report.questionDetails.length > 0 && (
             <Panel
               title={`${t('report.answerDeepDive')}`}

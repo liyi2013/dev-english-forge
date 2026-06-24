@@ -89,6 +89,12 @@ export interface ReviewQueueItem {
   title: string;
   source: string;
   topicSlug?: string;
+  reportId?: string;
+  questionIndex?: number;
+  userAnswer?: string;
+  problem?: string;
+  correctAnswer?: string;
+  drillRoute?: string;
   status: 'pending' | 'reviewed' | 'mastered';
   createdAt: string;
 }
@@ -217,7 +223,6 @@ export function getGeneratedReports(): Record<string, unknown>[] {
 
 export function saveGeneratedReport(report: Record<string, unknown>): void {
   const reports = getGeneratedReports();
-  // Replace if existing id found, otherwise push
   const idx = reports.findIndex((r) => r.id === report.id);
   if (idx >= 0) {
     reports[idx] = report;

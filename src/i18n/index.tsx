@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import zhCNMessages from './locales/zh-CN';
+import enUSMessages from './locales/en-US';
 
 type Locale = 'zh-CN' | 'en-US';
 
@@ -20,16 +21,8 @@ function getSavedLocale(): Locale {
 
 const messagesCache: Record<Locale, Record<string, string>> = {
   'zh-CN': zhCNMessages,
-  'en-US': {},
+  'en-US': enUSMessages,
 };
-
-async function loadMessages(locale: Locale) {
-  if (Object.keys(messagesCache[locale]).length > 0) return;
-  if (locale === 'en-US') {
-    const mod = await import('./locales/en-US');
-    messagesCache['en-US'] = mod.default;
-  }
-}
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
@@ -39,32 +32,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Record<string, string>>(
     () => ({ ...messagesCache[initialLocale] })
   );
-  const enUSRef = useRef<Record<string, string>>({});
-
-  useEffect(() => {
-    loadMessages(locale).then(() => {
-      setMessages({ ...messagesCache[locale] });
-    });
-  }, [locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, newLocale);
     }
-  }, []);
-
-  // Preload en-US in background so fallback is always available
-  useEffect(() => {
-    loadMessages('en-US').then(() => {
-      enUSRef.current = messagesCache['en-US'];
-    });
+    setMessages({ ...messagesCache[newLocale] });
   }, []);
 
   const t = useCallback((key: string): string => {
     const val = messages[key];
     if (val !== undefined && val !== '') return val;
-    if (enUSRef.current[key]) return enUSRef.current[key];
+    if (messagesCache['en-US'][key]) return messagesCache['en-US'][key];
     return key;
   }, [messages]);
 

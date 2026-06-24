@@ -72,7 +72,7 @@ export default function ReviewSession() {
       const queue = getReviewQueue().map((r) => ({
         id: `queue-${r.id}`, type: 'wrong_answer' as const,
         title: r.title, prompt: r.title,
-        answer: r.title || t('review.sessionSource'),
+        answer: r.correctAnswer || r.problem || r.title || t("review.sessionSource"),
         source: r.source, mastered: false,
       }));
       result.push(...mock, ...queue);

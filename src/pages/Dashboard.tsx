@@ -6,6 +6,10 @@ import { useI18n } from "@/i18n";
 import { getDashboardData } from "@/data/mockDashboard";
 import { Check, Flame, TrendingUp, Calendar, ArrowRight, Target, Mic } from "lucide-react";
 
+function pickText(locale: string, en: string, zh?: string) {
+  return locale === 'zh-CN' && zh ? zh : en;
+}
+
 export default function Dashboard() {
   const { t, locale } = useI18n();
   const data = getDashboardData();
@@ -17,7 +21,7 @@ export default function Dashboard() {
     });
   }
 
-  function greeting(t) {
+  function greeting() {
     const h = new Date().getHours();
     if (h < 12) return t("dash.greetingMorning");
     if (h < 18) return t("dash.greetingAfternoon");
@@ -28,7 +32,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div>
         <p className="text-sm text-muted-foreground">{formatToday()}</p>
-        <h1 className="text-2xl font-semibold mt-1">{greeting(t)}, {data.greetingName}</h1>
+        <h1 className="text-2xl font-semibold mt-1">{greeting()}, {data.greetingName}</h1>
       </div>
 
       {/* Daily focus banner */}
@@ -39,8 +43,12 @@ export default function Dashboard() {
           </div>
           <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('dash.todayFocus')}</div>
-            <p className="text-base font-medium text-foreground mt-0.5">{data.todayFocus.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{data.todayFocus.duration} · {data.todayFocus.description}</p>
+            <p className="text-base font-medium text-foreground mt-0.5">
+              {pickText(locale, data.todayFocus.title, data.todayFocus.titleZh)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {data.todayFocus.duration} · {pickText(locale, data.todayFocus.description, data.todayFocus.descriptionZh)}
+            </p>
           </div>
         </div>
         <div className="shrink-0">
@@ -56,15 +64,19 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="chip-blue">{data.continueLearning.path}</span>
+                  <span className="chip-blue">
+                    {pickText(locale, data.continueLearning.path, data.continueLearning.pathZh)}
+                  </span>
                   <span className="text-xs text-muted-foreground">{data.continueLearning.unit}</span>
                 </div>
                 <h4 className="mt-2 text-base font-semibold">
                   <Link to={data.continueLearning.route} className="hover:text-primary transition">
-                    {data.continueLearning.title}
+                    {pickText(locale, data.continueLearning.title, data.continueLearning.titleZh)}
                   </Link>
                 </h4>
-                <p className="text-sm text-muted-foreground mt-1">{data.continueLearning.next}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {pickText(locale, data.continueLearning.next, data.continueLearning.nextZh)}
+                </p>
                 <div className="mt-3 flex items-center gap-3">
                   <Progress value={data.continueLearning.progress} className="max-w-xs" />
                   <span className="text-xs text-muted-foreground font-mono">{data.continueLearning.progress}%</span>
@@ -85,23 +97,25 @@ export default function Dashboard() {
                     <span className={`w-4 h-4 shrink-0 rounded border flex items-center justify-center ${it.done ? "bg-success border-success text-white" : "border-border bg-card"}`}>
                       {(it.done || doneItems.has(it.label)) && <Check className="w-3 h-3" strokeWidth={3} />}
                     </span>
-                    <span className={`text-sm truncate ${(it.done || doneItems.has(it.label)) ? "text-muted-foreground line-through" : "text-foreground"}`}>{it.label}</span>
+                    <span className={`text-sm truncate ${(it.done || doneItems.has(it.label)) ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                      {pickText(locale, it.label, it.labelZh)}
+                    </span>
                   </div>
-                  <button className="text-xs text-primary hover:underline shrink-0" onClick={() => { setDoneItems(prev => new Set(prev).add(it.label)); toast.success(t("common.completed")); }}>{it.done || doneItems.has(it.label) ? t('common.done') : t('common.start')}</button>
+                  <button className="text-xs text-primary hover:underline shrink-0" onClick={() => { setDoneItems(prev => new Set(prev).add(it.label)); toast.success(t("common.completed")); }}>
+                    {t("common.done")}
+                  </button>
                 </li>
               ))}
             </ul>
           </Panel>
 
           {/* Weak skills */}
-          <Panel title={t('dash.weakSkills')} description={t("dash.focusAreas")} action={<Link to="/review" className="text-xs text-primary hover:underline">{t('common.viewAll')} →</Link>}>
+          <Panel title={t('dash.weakSkills')} description={t("dash.clickToSee")}>
             <ul className="space-y-3">
               {data.weakSkills.map((s) => (
-                <li key={s.tag}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-foreground">{s.tag}</span>
-                    <span className="font-mono text-muted-foreground">{s.level}%</span>
-                  </div>
+                <li key={s.tag} className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-foreground">{s.tag}</span>
+                  <span className="font-mono text-muted-foreground">{s.level}%</span>
                   <Progress value={s.level} tone="warning" />
                 </li>
               ))}
@@ -120,9 +134,11 @@ export default function Dashboard() {
                   >
                     <div>
                       <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold bg-white/15 px-2 py-0.5 rounded">
-                        <Mic className="w-3 h-3" /> {rec.tag}
+                        <Mic className="w-3 h-3" /> {pickText(locale, rec.tag, rec.tagZh)}
                       </div>
-                      <h5 className="mt-2 text-sm font-semibold leading-snug">{rec.title}</h5>
+                      <h5 className="mt-2 text-sm font-semibold leading-snug">
+                        {pickText(locale, rec.title, rec.titleZh)}
+                      </h5>
                       <p className="text-xs text-primary-foreground/80 mt-1">{t("dash.liveFeedback")}</p>
                     </div>
                     <div className="mt-3 text-xs font-medium inline-flex items-center gap-1">
@@ -135,8 +151,10 @@ export default function Dashboard() {
                     to={rec.route}
                     className="panel p-3 hover:border-primary/40 hover:shadow-sm transition cursor-pointer flex flex-col"
                   >
-                    <span className="chip-blue">{rec.tag}</span>
-                    <h5 className="mt-2 text-sm font-medium">{rec.title}</h5>
+                    <span className="chip-blue">{pickText(locale, rec.tag, rec.tagZh)}</span>
+                    <h5 className="mt-2 text-sm font-medium">
+                      {pickText(locale, rec.title, rec.titleZh)}
+                    </h5>
                     <p className="text-xs text-muted-foreground mt-1">{rec.time}</p>
                   </Link>
                 )
@@ -180,8 +198,12 @@ export default function Dashboard() {
                 <Calendar className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium">{data.upcoming.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{data.upcoming.subtitle}</p>
+                <p className="text-sm font-medium">
+                  {pickText(locale, data.upcoming.title, data.upcoming.titleZh)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {pickText(locale, data.upcoming.subtitle, data.upcoming.subtitleZh)}
+                </p>
                 <Link to={data.upcoming.route} className="text-xs text-primary hover:underline mt-1.5 inline-block">{t('ai.title')} →</Link>
               </div>
             </div>

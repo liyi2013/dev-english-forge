@@ -13,11 +13,11 @@ function statusIcon(status: string) {
   return <Circle className="w-3.5 h-3.5 text-muted-foreground" />;
 }
 
-function statusLabel(m: { status: string; progress?: number }) {
-  if (m.status === "completed") return "Completed";
+function statusLabel(m: { status: string; progress?: number }, t: (key: string) => string) {
+  if (m.status === "completed") return t('common.completed');
   if (m.status === "in_progress") return `${m.progress ?? 0}%`;
-  if (m.status === "locked") return "Locked";
-  return "Up next";
+  if (m.status === "locked") return t('learning.lockedModule');
+  return t('learning.startModule');
 }
 
 function pathProgress(modules: { status: string; progress?: number }[]) {
@@ -87,7 +87,7 @@ export default function Learning() {
                         m.status === "in_progress" ? "text-primary" : "text-muted-foreground"
                       }`}
                     >
-                      {statusLabel(m)}
+                      {statusLabel(m, t)}
                     </span>
                   </li>
                 ))}

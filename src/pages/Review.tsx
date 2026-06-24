@@ -31,6 +31,7 @@ type DisplayItem = (ReviewItem | ReviewQueueItem) & {
   _problem?: string;
   _correctAnswer?: string;
   _topicSlug?: string;
+  _drillRoute?: string;
 };
 
 export default function Review() {
@@ -42,7 +43,6 @@ export default function Review() {
   const [vocabDone, setVocabDone] = useState<Set<string>>(new Set());
   const reviewListRef = useRef<HTMLDivElement>(null);
 
-  // --- Initialize local review items from both mock data and localStorage ---
   const [mockItems] = useState(() => getReviewItems().map((item) => ({
     ...item,
     status: isMockItemReviewed(item.id) ? 'reviewed' : item.status,
@@ -50,7 +50,6 @@ export default function Review() {
 
   const [queueItems] = useState<ReviewQueueItem[]>(() => getReviewQueue());
 
-  // Merge into display items with safe defaults
   const [displayItems, setDisplayItems] = useState<DisplayItem[]>(() => {
     const mock: DisplayItem[] = mockItems.map((item) => ({
       ...item,
@@ -71,10 +70,11 @@ export default function Review() {
       _title: item.title,
       _source: item.source,
       _status: item.status as 'pending' | 'reviewed' | 'mastered',
-      _userAnswer: undefined,
-      _problem: undefined,
-      _correctAnswer: undefined,
+      _userAnswer: item.userAnswer,
+      _problem: item.problem,
+      _correctAnswer: item.correctAnswer,
       _topicSlug: item.topicSlug,
+      _drillRoute: item.drillRoute,
     }));
     return [...mock, ...queue];
   });
@@ -155,37 +155,17 @@ export default function Review() {
         </div>
       </Panel>
 
-      <div className="panel mb-6">
-        <Tabs tabs={tabLabels} active={t(tab)} onChange={setTab} />
-        <div className="px-5 py-2 text-xs text-muted-foreground flex items-center justify-between">
-          <span>
-            {tab === tabKeys[0] && `${filteredItems.length} ${t('review.itemsQueued')} · ${t('common.sorted')}`}
-            {tab === tabKeys[1] && `${savedVocab.length} ${t('review.items')}`}
-            {tab === tabKeys[2] && `${savedSentences.length} ${t('review.items')}`}
-            {tab === tabKeys[3] && `${reports.length} ${t('review.reports')}`}
-          </span>
-          {tab === tabKeys[0] && (
-            <div className="flex gap-2">
-              <button
-                className={`hover:text-foreground ${sortBy === 'newest' ? 'text-foreground font-medium' : ''}`}
-                onClick={() => setSortBy('newest')}
-              >
-                {t('review.newest')}
-              </button>
-              <span>·</span>
-              <button
-                className={`hover:text-foreground ${sortBy === 'weakest' ? 'text-foreground font-medium' : ''}`}
-                onClick={() => setSortBy('weakest')}
-              >
-                {t('review.weakest')}
-              </button>
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-8 space-y-4" ref={reviewListRef}>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <Tabs tabs={tabLabels} active={t(tab)} onChange={setTab} />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{t('common.sorted')}:</span>
+              <Button variant="ghost" size="sm" onClick={() => setSortBy('newest')} className={sortBy === 'newest' ? 'text-primary' : ''}>{t('review.newest')}</Button>
+              <Button variant="ghost" size="sm" onClick={() => setSortBy('weakest')} className={sortBy === 'weakest' ? 'text-primary' : ''}>{t('review.weakest')}</Button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      <div className="grid grid-cols-12 gap-6" ref={reviewListRef}>
-        <div className="col-span-12 lg:col-span-8 space-y-4">
           {tab === tabKeys[0] && (
             filteredItems.length === 0 ? (
               <EmptyState
@@ -246,7 +226,11 @@ export default function Review() {
                     )}
 
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      {item._topicSlug ? (
+                      {item._drillRoute ? (
+                        <Link to={item._drillRoute}>
+                          <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                        </Link>
+                      ) : item._topicSlug ? (
                         <Link to={`/technical-english/${item._topicSlug}`}>
                           <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
                         </Link>

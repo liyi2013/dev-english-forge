@@ -15,23 +15,45 @@ const modeChips = [
   { labelKey: "tech.interview", icon: MessageSquare },
 ];
 
-// Map module names to topic slugs (fallback)
-function moduleToSlug(name: string): string | undefined {
+// Map module names to full routes (not just topic slugs)
+function moduleToRoute(name: string): string | undefined {
   const map: Record<string, string> = {
-    'RESTful API': 'restful-api',
-    'Database': 'database',
-    'Redis Cache': 'redis-cache',
-    'RabbitMQ': 'rabbitmq',
-    'Self-introduction': undefined,
-    'Project story (STAR)': undefined,
-    'System design Q&A': undefined,
-    'Behavioral deep dive': undefined,
-    'Daily standup': undefined,
-    'Code review comments': undefined,
-    'Async writing (Slack/email)': undefined,
-    'Disagree politely': undefined,
+    // Technical English
+    'RESTful API': '/technical-english/restful-api',
+    'Database': '/technical-english/database',
+    'Redis Cache': '/technical-english/redis-cache',
+    'RabbitMQ': '/technical-english/rabbitmq',
+    'Docker': '/technical-english/docker',
+    'CI/CD': '/technical-english/cicd',
+    // Interview English
+    'Self-introduction': '/interview-english/scenarios/self-introduction',
+    'Project story (STAR)': '/interview-english/scenarios/project-experience',
+    'System design Q&A': '/interview-english/scenarios/technical-qa',
+    'Behavioral deep dive': '/interview-english/scenarios/behavioral-questions',
+    // Workplace English
+    'Daily standup': '/workplace-english/scenarios/daily-standup',
+    'Code review comments': '/workplace-english/scenarios/code-review',
+    'Async writing (Slack/email)': '/workplace-english/scenarios/writing-emails',
+    'Disagree politely': '/workplace-english/scenarios/meetings-clarification',
   };
   return map[name];
+}
+
+// Get a sensible next route for the sidebar "continue" button
+function nextRoute(path: { modules: { name: string; status: string }[], topicSlugs: string[], slug: string }): string | undefined {
+  // Check in-progress module first
+  const inProgress = path.modules.find((m) => m.status === 'in_progress');
+  if (inProgress) return moduleToRoute(inProgress.name);
+
+  // Check next module
+  const nextMod = path.modules.find((m) => m.status === 'next');
+  if (nextMod) return moduleToRoute(nextMod.name);
+
+  // Fallback: first topic slug -> technical english
+  if (path.topicSlugs.length > 0) {
+    return `/technical-english/${path.topicSlugs[0]}`;
+  }
+  return undefined;
 }
 
 export default function LearningPathDetail() {
@@ -54,10 +76,7 @@ export default function LearningPathDetail() {
   }
 
   const topics = getMockTopics().filter((tp) => path.topicSlugs.includes(tp.slug));
-  const inProgressModule = path.modules.find((m) => m.status === 'in_progress');
-
-  // Find topic slug for in-progress module
-  const nextTopicSlug = inProgressModule ? moduleToSlug(inProgressModule.name) || path.topicSlugs[0] : path.topicSlugs[0];
+  const resumeRoute = nextRoute(path);
 
   return (
     <div>
@@ -91,7 +110,7 @@ export default function LearningPathDetail() {
           <Panel title={t('learning.modules')}>
             <ul className="divide-y divide-border -my-2">
               {path.modules.map((mod) => {
-                const slug = moduleToSlug(mod.name);
+                const route = moduleToRoute(mod.name);
                 const isLocked = mod.status === 'locked';
                 const isCompleted = mod.status === 'completed';
                 const isInProgress = mod.status === 'in_progress';
@@ -115,31 +134,31 @@ export default function LearningPathDetail() {
                       </span>
                     </div>
                     <div>
-                      {isCompleted && slug && (
-                        <Link to={`/technical-english/${slug}`}>
+                      {isCompleted && route && (
+                        <Link to={route}>
                           <Button variant="ghost" size="sm">{t('common.open')}</Button>
                         </Link>
                       )}
-                      {isInProgress && slug && (
-                        <Link to={`/technical-english/${slug}`}>
+                      {isInProgress && route && (
+                        <Link to={route}>
                           <Button size="sm"><Play className="w-3 h-3" /> {t('learning.continueModule')}</Button>
                         </Link>
                       )}
-                      {isInProgress && !slug && (
+                      {isInProgress && !route && (
                         <Button size="sm" onClick={() => toast.info(t('common.comingSoon'))}><Play className="w-3 h-3" /> {t('learning.continueModule')}</Button>
                       )}
-                      {isNext && slug && (
-                        <Link to={`/technical-english/${slug}`}>
+                      {isNext && route && (
+                        <Link to={route}>
                           <Button variant="outline" size="sm">{t('learning.startModule')}</Button>
                         </Link>
                       )}
-                      {isNext && !slug && (
+                      {isNext && !route && (
                         <Button variant="outline" size="sm" onClick={() => toast.info(t('common.comingSoon'))}>{t('learning.startModule')}</Button>
                       )}
                       {isLocked && (
                         <Button variant="outline" size="sm" disabled>{t('learning.lockedModule')}</Button>
                       )}
-                      {isCompleted && !slug && (
+                      {isCompleted && !route && (
                         <Button variant="ghost" size="sm" disabled><CheckCircle2 className="w-3 h-3" /></Button>
                       )}
                     </div>
@@ -187,8 +206,8 @@ export default function LearningPathDetail() {
           <Panel title={t('common.continue')}>
             <p className="text-xs text-muted-foreground">{t('learning.nextMilestone')}</p>
             <p className="text-sm font-medium mt-1">{path.milestoneZh || path.milestone}</p>
-            {nextTopicSlug ? (
-              <Link to={`/technical-english/${nextTopicSlug}`} className="mt-3 block">
+            {resumeRoute ? (
+              <Link to={resumeRoute} className="mt-3 block">
                 <Button className="w-full"><Play className="w-3.5 h-3.5" /> {t('learning.continueModule')}</Button>
               </Link>
             ) : (
