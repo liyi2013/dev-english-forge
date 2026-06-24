@@ -32,11 +32,65 @@ const defaultProfile = (): StoredProfileDraft => {
   };
 };
 
+
+const roleOptions = [
+  { value: "backend-engineer", zh: "后端工程师", en: "Backend Engineer" },
+  { value: "frontend-engineer", zh: "前端工程师", en: "Frontend Engineer" },
+  { value: "fullstack-engineer", zh: "全栈工程师", en: "Full-stack Engineer" },
+  { value: "java-backend-engineer", zh: "Java 后端工程师", en: "Java Backend Engineer" },
+  { value: "dotnet-backend-engineer", zh: ".NET 后端工程师", en: ".NET Backend Engineer" },
+  { value: "python-backend-engineer", zh: "Python 后端工程师", en: "Python Backend Engineer" },
+  { value: "go-backend-engineer", zh: "Go 后端工程师", en: "Go Backend Engineer" },
+  { value: "devops-engineer", zh: "DevOps 工程师", en: "DevOps Engineer" },
+  { value: "data-engineer", zh: "数据工程师", en: "Data Engineer" },
+  { value: "ai-engineer", zh: "AI 应用工程师", en: "AI Application Engineer" },
+  { value: "custom", zh: "自定义角色", en: "Custom role" },
+];
+
+const targetRoleOptions = [
+  { value: "junior-backend", zh: "初级后端工程师", en: "Junior Backend Engineer" },
+  { value: "mid-backend", zh: "中级后端工程师", en: "Mid-level Backend Engineer" },
+  { value: "senior-backend", zh: "高级后端工程师", en: "Senior Backend Engineer" },
+  { value: "senior-backend-overseas", zh: "高级后端工程师（海外方向）", en: "Senior Backend Engineer (Overseas)" },
+  { value: "backend-lead", zh: "后端技术负责人", en: "Backend Tech Lead" },
+  { value: "fullstack-overseas", zh: "全栈工程师（海外方向）", en: "Full-stack Engineer (Overseas)" },
+  { value: "ai-application-engineer", zh: "AI 应用工程师", en: "AI Application Engineer" },
+  { value: "solution-architect", zh: "解决方案架构师", en: "Solution Architect" },
+  { value: "custom", zh: "自定义目标岗位", en: "Custom target role" },
+];
+
+function findRoleOption(zh: string, en: string) {
+  return roleOptions.find((o) => o.zh === zh && o.en === en) || null;
+}
+
+function findTargetRoleOption(zh: string, en: string) {
+  return targetRoleOptions.find((o) => o.zh === zh && o.en === en) || null;
+}
+
 export default function ProfileEdit() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const [form, setForm] = useState<StoredProfileDraft>(defaultProfile);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Role selection state
+  const [selectedRoleValue, setSelectedRoleValue] = useState(() => {
+    const opt = findRoleOption(form.roleZh, form.role);
+    return opt ? opt.value : "custom";
+  });
+  const [isRoleCustom, setIsRoleCustom] = useState(() => {
+    return findRoleOption(form.roleZh, form.role) === null;
+  });
+
+  // Target role selection state
+  const [selectedTargetValue, setSelectedTargetValue] = useState(() => {
+    const opt = findTargetRoleOption(form.targetZh, form.target);
+    return opt ? opt.value : "custom";
+  });
+  const [isTargetCustom, setIsTargetCustom] = useState(() => {
+    return findTargetRoleOption(form.targetZh, form.target) === null;
+  });
+
 
   const update = <K extends keyof StoredProfileDraft>(
     key: K,
@@ -165,11 +219,38 @@ export default function ProfileEdit() {
                 <label className="text-xs font-medium text-muted-foreground block mb-1">
                   {t("profileEdit.roleZh")} <span className="text-destructive">*</span>
                 </label>
-                <input
-                  value={form.roleZh}
-                  onChange={(e) => update("roleZh", e.target.value)}
+                <select
+                  value={selectedRoleValue}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedRoleValue(val);
+                    if (val === "custom") {
+                      setIsRoleCustom(true);
+                    } else {
+                      setIsRoleCustom(false);
+                      const opt = roleOptions.find((o) => o.value === val);
+                      if (opt) {
+                        update("roleZh", opt.zh);
+                        update("role", opt.en);
+                        update("roleKey" as keyof StoredProfileDraft, opt.value);
+                      }
+                    }
+                  }}
                   className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                />
+                >
+                  <option value="">{t("profileEdit.selectRole")}</option>
+                  {roleOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.zh}</option>
+                  ))}
+                </select>
+                {isRoleCustom && (
+                  <input
+                    value={form.roleZh}
+                    onChange={(e) => update("roleZh", e.target.value)}
+                    placeholder={t("profileEdit.roleZh")}
+                    className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  />
+                )}
                 {errors.roleZh && (
                   <p className="text-xs text-destructive mt-0.5">{errors.roleZh}</p>
                 )}
@@ -178,11 +259,20 @@ export default function ProfileEdit() {
                 <label className="text-xs font-medium text-muted-foreground block mb-1">
                   {t("profileEdit.role")} <span className="text-destructive">*</span>
                 </label>
-                <input
-                  value={form.role}
-                  onChange={(e) => update("role", e.target.value)}
-                  className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                />
+                {isRoleCustom ? (
+                  <input
+                    value={form.role}
+                    onChange={(e) => update("role", e.target.value)}
+                    placeholder={t("profileEdit.role")}
+                    className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  />
+                ) : (
+                  <input
+                    value={form.role}
+                    readOnly
+                    className="w-full text-sm bg-muted/50 border border-border rounded-md px-3 py-2 text-muted-foreground cursor-default"
+                  />
+                )}
                 {errors.role && (
                   <p className="text-xs text-destructive mt-0.5">{errors.role}</p>
                 )}
@@ -220,11 +310,38 @@ export default function ProfileEdit() {
                 <label className="text-xs font-medium text-muted-foreground block mb-1">
                   {t("profileEdit.targetZh")} <span className="text-destructive">*</span>
                 </label>
-                <input
-                  value={form.targetZh}
-                  onChange={(e) => update("targetZh", e.target.value)}
+                <select
+                  value={selectedTargetValue}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedTargetValue(val);
+                    if (val === "custom") {
+                      setIsTargetCustom(true);
+                    } else {
+                      setIsTargetCustom(false);
+                      const opt = targetRoleOptions.find((o) => o.value === val);
+                      if (opt) {
+                        update("targetZh", opt.zh);
+                        update("target", opt.en);
+                        update("targetRoleKey" as keyof StoredProfileDraft, opt.value);
+                      }
+                    }
+                  }}
                   className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                />
+                >
+                  <option value="">{t("profileEdit.selectTargetRole")}</option>
+                  {targetRoleOptions.map((o) => (
+                    <option key={o.value} value={o.value}>{o.zh}</option>
+                  ))}
+                </select>
+                {isTargetCustom && (
+                  <input
+                    value={form.targetZh}
+                    onChange={(e) => update("targetZh", e.target.value)}
+                    placeholder={t("profileEdit.targetZh")}
+                    className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 mt-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  />
+                )}
                 {errors.targetZh && (
                   <p className="text-xs text-destructive mt-0.5">{errors.targetZh}</p>
                 )}
@@ -233,11 +350,20 @@ export default function ProfileEdit() {
                 <label className="text-xs font-medium text-muted-foreground block mb-1">
                   {t("profileEdit.target")} <span className="text-destructive">*</span>
                 </label>
-                <input
-                  value={form.target}
-                  onChange={(e) => update("target", e.target.value)}
-                  className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                />
+                {isTargetCustom ? (
+                  <input
+                    value={form.target}
+                    onChange={(e) => update("target", e.target.value)}
+                    placeholder={t("profileEdit.target")}
+                    className="w-full text-sm bg-card border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                  />
+                ) : (
+                  <input
+                    value={form.target}
+                    readOnly
+                    className="w-full text-sm bg-muted/50 border border-border rounded-md px-3 py-2 text-muted-foreground cursor-default"
+                  />
+                )}
                 {errors.target && (
                   <p className="text-xs text-destructive mt-0.5">{errors.target}</p>
                 )}

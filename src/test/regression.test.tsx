@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { I18nProvider } from "@/i18n";
 import SearchResults from "@/pages/SearchResults";
 import Dashboard from "@/pages/Dashboard";
+import ProfileEdit from "@/pages/ProfileEdit";
 import AIInterviewLobby from "@/pages/AIInterviewLobby";
 import { toast } from "sonner";
 
@@ -622,5 +623,116 @@ describe("Fixed i18n keys regression", () => {
 
     // No raw key should appear
     expect(screen.queryByText("search.topicsLabel")).toBeNull();
+  });
+});
+
+// =========== 7. ProfileEdit role dropdown regression ===========
+describe("ProfileEdit role dropdown regression", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  function renderProfileEdit() {
+    return render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/profile/edit"]}>
+          <Routes>
+            <Route path="/profile/edit" element={<ProfileEdit />} />
+            <Route path="/profile" element={<div>Profile Page</div>} />
+            <Route path="*" element={<div>Not Found</div>} />
+          </Routes>
+        </MemoryRouter>
+      </I18nProvider>
+    );
+  }
+
+  it("selecting a preset role syncs Chinese and English role fields", async () => {
+    renderProfileEdit();
+
+    // First select is Chinese role, second is target role
+    const selects = screen.getAllByRole("combobox");
+    const roleZhSelect = selects[0] as HTMLSelectElement;
+
+    // Select "后端工程师"
+    fireEvent.change(roleZhSelect, { target: { value: "backend-engineer" } });
+
+    // English role field should now show "Backend Engineer" (readonly)
+    await waitFor(() => {
+      const enField = screen.getByDisplayValue("Backend Engineer");
+      expect(enField).toBeDefined();
+      expect((enField as HTMLInputElement).readOnly).toBe(true);
+    });
+
+    // Chinese role select should show "后端工程师"
+    expect((roleZhSelect as HTMLSelectElement).value).toBe("backend-engineer");
+  });
+
+  it("selecting custom role enables both text inputs for manual entry", async () => {
+    renderProfileEdit();
+
+    const selects = screen.getAllByRole("combobox");
+    const roleZhSelect = selects[0];
+
+    // Select custom
+    fireEvent.change(roleZhSelect, { target: { value: "custom" } });
+
+    await waitFor(() => {
+      // After selecting custom, a text input for custom Chinese role should appear
+      const customInputs = screen.getAllByPlaceholderText("中文角色");
+      expect(customInputs.length).toBeGreaterThanOrEqual(1);
+    });
+
+    // English role field should now be editable
+    const enInputs = screen.getAllByPlaceholderText("英文角色");
+    expect(enInputs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("selecting preset target role syncs both target fields", async () => {
+    renderProfileEdit();
+
+    const selects = screen.getAllByRole("combobox");
+    // Target role select is the second select
+    const targetSelect = selects[1];
+
+    fireEvent.change(targetSelect, { target: { value: "senior-backend-overseas" } });
+
+    await waitFor(() => {
+      const targetEnField = screen.getByDisplayValue("Senior Backend Engineer (Overseas)");
+      expect(targetEnField).toBeDefined();
+      expect((targetEnField as HTMLInputElement).readOnly).toBe(true);
+    });
+  });
+
+  it("saving profile stores roleKey and targetRoleKey", async () => {
+    renderProfileEdit();
+
+    const selects = screen.getAllByRole("combobox");
+
+    // Select role
+    fireEvent.change(selects[0], { target: { value: "backend-engineer" } });
+
+    // Select target
+    fireEvent.change(selects[1], { target: { value: "senior-backend-overseas" } });
+
+    // Wait for sync
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Backend Engineer")).toBeDefined();
+      expect(screen.getByDisplayValue("Senior Backend Engineer (Overseas)")).toBeDefined();
+    });
+
+    // Save
+    const saveBtn = screen.getByText("保存");
+    fireEvent.click(saveBtn);
+
+    const saved = JSON.parse(memLS.getItem("devenglish_profile") || "{}");
+    expect(saved.roleKey).toBe("backend-engineer");
+    expect(saved.role).toBe("Backend Engineer");
+    expect(saved.roleZh).toBe("后端工程师");
+    expect(saved.targetRoleKey).toBe("senior-backend-overseas");
+    expect(saved.target).toBe("Senior Backend Engineer (Overseas)");
+    expect(saved.targetZh).toBe("高级后端工程师（海外方向）");
   });
 });

@@ -246,9 +246,11 @@ export interface StoredProfileDraft {
   nameZh: string;
   role: string;
   roleZh: string;
+  roleKey?: string;
   experience: string;
   target: string;
   targetZh: string;
+  targetRoleKey?: string;
   dailyGoal: number;
   interfaceLanguage: string;
   voiceAccent: string;
