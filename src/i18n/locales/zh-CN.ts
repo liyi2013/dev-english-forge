@@ -304,6 +304,32 @@ const zhCN: Record<string, string> = {
   'dash.greetingEvening': '晚上好',
   'report.notFound': '报告未找到',
   'report.notFoundDesc': '未找到该面试报告，可能已被删除或链接失效。',
+  'tech.read': '阅读',
+  'tech.vocabulary': '词汇',
+  'tech.speak': '口语',
+  'tech.interview': '面试',
+  'tech.backendEnglish': '后端英语',
+  'tech.systemDesignEnglish': '系统设计英语',
+  'tech.devopsEnglish': 'DevOps 英语',
+  'tech.apisFocus': 'API、数据库、服务',
+  'tech.architectureFocus': '架构、扩展、权衡',
+  'tech.cicdFocus': 'CI/CD、Docker、Kubernetes',
+  'tech.englishBreakdown': '技术英语能力分解',
+  'tech.reachB2': '达到口语 B2 水平',
+  'tech.explainEndpoint': '自信地用英语解释端点、状态码和幂等性。',
+  'ai.placeholder': '在此输入你的回答或使用下方录音…',
+  'ai.answerSaved': '回答已保存',
+  'ai.clickMic': '点击麦克风开始录音',
+  'ai.updatesAsYouSpeak': '随你发言实时更新',
+  'ai.liveRefinedAtEnd': '实时评估，最终结果将在结束时完善',
+  'ai.fluency': '流利度',
+  'ai.technicalAccuracy': '技术准确性',
+  'ai.answerStructure': '回答结构',
+  'report.rewrittenFromYourWords': '根据你的回答改写',
+  'interview.titleDesc': '模拟面试问题',
+  'interview.startPractice': '开始练习',
+
+
 
 
 

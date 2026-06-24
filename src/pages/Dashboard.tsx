@@ -5,11 +5,11 @@ import { getDashboardData } from "@/data/mockDashboard";
 import { Check, Flame, TrendingUp, Calendar, ArrowRight, Target, Mic } from "lucide-react";
 
 export default function Dashboard() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const data = getDashboardData();
 
   function formatToday() {
-    return new Date().toLocaleDateString("en-US", {
+    return new Date().toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
       weekday: "long", month: "long", day: "numeric",
     });
   }

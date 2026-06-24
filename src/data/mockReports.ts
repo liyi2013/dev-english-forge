@@ -221,7 +221,7 @@ export function getReportById(id: string): InterviewReport | undefined {
       const gen = reports.find((r) => r.id === id);
       if (gen) return gen;
     }
-  } catch {}
+  } catch { return undefined; }
   return undefined;
 }
 
@@ -254,13 +254,21 @@ export function generateMockReport(
   const lengthScore = Math.min(avgLength / 50, 1); // 50 chars per answer is "good"
 
   const baseScore = Math.max(50, Math.round(60 + answerRate * 20 + lengthScore * 10));
-  const variation = Math.floor(Math.random() * 10) - 5;
+  // Deterministic variation derived from config + question text
+  const seedStr = config.role + config.difficulty + config.interviewType + 
+    questions.slice(0, Math.min(questionCount, questions.length)).map(q => q.question).join("|");
+  let seed = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    seed = ((seed << 5) - seed) + seedStr.charCodeAt(i);
+    seed = seed & seed;
+  }
+  const variation = Math.abs(seed % 11) - 5;
 
   const overallScore = Math.min(98, Math.max(35, baseScore + variation));
-  const englishExpression = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 12) - 6));
-  const technicalAccuracy = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 10) - 5));
-  const answerStructure = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 14) - 7));
-  const confidence = Math.min(95, Math.max(30, overallScore + Math.floor(Math.random() * 10) - 5));
+  const englishExpression = Math.min(95, Math.max(30, overallScore + Math.abs(seed % 13) - 6));
+  const technicalAccuracy = Math.min(95, Math.max(30, overallScore + Math.abs((seed + 3) % 11) - 5));
+  const answerStructure = Math.min(95, Math.max(30, overallScore + Math.abs((seed + 7) % 15) - 7));
+  const confidence = Math.min(95, Math.max(30, overallScore + Math.abs((seed + 11) % 11) - 5));
 
   // Generate strong/weak points based on scores
   const strongPoints: string[] = [];
@@ -292,7 +300,9 @@ export function generateMockReport(
     const qType = questions[i].type;
 
     const userAns = answer?.text || '[Not answered]';
-    const qScore = userAns === '[Not answered]' ? 30 : Math.min(95, Math.max(35, overallScore + Math.floor(Math.random() * 16) - 8));
+    // Deterministic qScore based on question + answer text
+    const qSeed = Math.abs((seed + i * 7 + questions[i].question.length) % 17);
+    const qScore = userAns === '[Not answered]' ? 30 : Math.min(95, Math.max(35, overallScore + qSeed - 8));
 
     const gapAnalysis = [
       userAns.length < 30 ? 'Answer is too short. Aim for 2-3 sentences.' : 'Consider adding more specific technical details.',

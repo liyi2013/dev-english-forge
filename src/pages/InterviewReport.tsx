@@ -33,7 +33,7 @@ export default function InterviewReport() {
           return reports[reports.length - 1];
         }
       }
-    } catch {}
+    } catch { /* ignore */ }
     // Fallback to first static mock report
     return getReportById('report-1');
   }, [reportId]);
@@ -222,7 +222,7 @@ export default function InterviewReport() {
                   <div className="flex items-center gap-2 mb-2">
                     <Wand2 className="w-3.5 h-3.5 text-primary" />
                     <span className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('report.betterVersion')}</span>
-                    <span className="chip-blue">Rewritten from your words</span>
+                    <span className="chip-blue">{t("report.rewrittenFromYourWords")}</span>
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">{report.questionDetails[0].betterAnswerVersion}</p>
                   <div className="mt-3 flex gap-2">

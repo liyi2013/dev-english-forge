@@ -7,16 +7,16 @@ import { getCoreSkills } from "@/data/mockProfile";
 import { ArrowRight, BookOpen, Mic, MessageSquare, Sparkles } from "lucide-react";
 
 const modes = [
-  { label: "Read", icon: BookOpen },
-  { label: "Vocabulary", icon: Sparkles },
-  { label: "Speak", icon: Mic },
-  { label: "Interview", icon: MessageSquare },
+  { labelKey: "tech.read", icon: BookOpen },
+  { labelKey: "tech.vocabulary", icon: Sparkles },
+  { labelKey: "tech.speak", icon: Mic },
+  { labelKey: "tech.interview", icon: MessageSquare },
 ];
 
-const paths = [
-  { name: "Backend English", focusKey: "APIs, databases, services", progress: 48 },
-  { name: "System Design English", focusKey: "Architecture, scaling, trade-offs", progress: 22 },
-  { name: "DevOps English", focusKey: "CI/CD, Docker, Kubernetes", progress: 11 },
+const pathKeys = [
+  { nameKey: "tech.backendEnglish", focusKey: "tech.apisFocus", progress: 48 },
+  { nameKey: "tech.systemDesignEnglish", focusKey: "tech.architectureFocus", progress: 22 },
+  { nameKey: "tech.devopsEnglish", focusKey: "tech.cicdFocus", progress: 11 },
 ];
 
 export default function TechnicalEnglish() {
@@ -40,11 +40,11 @@ export default function TechnicalEnglish() {
                 </div>
                 <h3 className="mt-2 text-xl font-semibold">RESTful API Design</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-                  Explain endpoints, status codes, and idempotency in English with confidence.
+                  {t("tech.explainEndpoint")}
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-1.5">
                   {modes.map((m) => (
-                    <span key={m.label} className="chip"><m.icon className="w-3 h-3" /> {m.label}</span>
+                    <span key={m.labelKey} className="chip"><m.icon className="w-3 h-3" /> {t(m.labelKey)}</span>
                   ))}
                 </div>
               </div>
@@ -59,10 +59,10 @@ export default function TechnicalEnglish() {
           <div>
             <h2 className="text-sm font-semibold text-foreground mb-3">{t('learning.center')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {paths.map((p) => (
-                <div key={p.name} className="panel p-4 hover:border-primary/40 transition cursor-pointer">
-                  <h4 className="text-sm font-semibold">{p.name}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{p.focusKey}</p>
+              {pathKeys.map((p) => (
+                <div key={p.nameKey} className="panel p-4 hover:border-primary/40 transition cursor-pointer">
+                  <h4 className="text-sm font-semibold">{t(p.nameKey)}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{t(p.focusKey)}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Progress value={p.progress} />
                     <span className="text-[11px] font-mono text-muted-foreground shrink-0">{p.progress}%</span>
@@ -92,8 +92,8 @@ export default function TechnicalEnglish() {
                   modeChips={
                     <div className="flex flex-wrap items-center gap-1">
                       {modes.map((m) => (
-                        <span key={m.label} className="chip text-[10px] py-0.5">
-                          <m.icon className="w-2.5 h-2.5" /> {m.label}
+                        <span key={m.labelKey} className="chip text-[10px] py-0.5">
+                          <m.icon className="w-2.5 h-2.5" /> {t(m.labelKey)}
                         </span>
                       ))}
                     </div>
@@ -106,7 +106,7 @@ export default function TechnicalEnglish() {
 
         {/* Skills panel */}
         <div className="col-span-12 lg:col-span-3">
-          <Panel title={t('tech.skills')} description="Technical English breakdown">
+          <Panel title={t('tech.skills')} description={t("tech.englishBreakdown")}>
             <ul className="space-y-4">
               {skills.map((s) => (
                 <li key={s.name}>
@@ -120,7 +120,7 @@ export default function TechnicalEnglish() {
             </ul>
             <div className="mt-5 pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">{t('tech.nextMilestone')}</p>
-              <p className="text-sm font-medium mt-0.5">Reach B2 in Speaking</p>
+              <p className="text-sm font-medium mt-0.5">{t("tech.reachB2")}</p>
               <Button variant="outline" size="sm" className="mt-3 w-full">{t('tech.viewPlan')}</Button>
             </div>
           </Panel>

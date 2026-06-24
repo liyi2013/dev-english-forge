@@ -77,7 +77,7 @@ export default function SearchResults() {
       r.title.toLowerCase().includes(q.toLowerCase()) ||
       String(r.overallScore).includes(q)
     );
-  }, [q, locale]);
+  }, [q, t]);
 
   const sentenceItems = useMemo(() => {
     if (!q) return [];

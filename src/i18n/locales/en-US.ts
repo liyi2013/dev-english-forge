@@ -304,6 +304,32 @@ const enUS: Record<string, string> = {
   'dash.greetingEvening': 'Good evening',
   'report.notFound': 'Report not found',
   'report.notFoundDesc': 'The interview report was not found. It may have been deleted or the link is invalid.',
+  'tech.read': 'Read',
+  'tech.vocabulary': 'Vocabulary',
+  'tech.speak': 'Speak',
+  'tech.interview': 'Interview',
+  'tech.backendEnglish': 'Backend English',
+  'tech.systemDesignEnglish': 'System Design English',
+  'tech.devopsEnglish': 'DevOps English',
+  'tech.apisFocus': 'APIs, databases, services',
+  'tech.architectureFocus': 'Architecture, scaling, trade-offs',
+  'tech.cicdFocus': 'CI/CD, Docker, Kubernetes',
+  'tech.englishBreakdown': 'Technical English breakdown',
+  'tech.reachB2': 'Reach B2 in Speaking',
+  'tech.explainEndpoint': 'Explain endpoints, status codes, and idempotency in English with confidence.',
+  'ai.placeholder': 'Type your answer or use voice recording below…',
+  'ai.answerSaved': 'Answer saved',
+  'ai.clickMic': 'Click mic to record',
+  'ai.updatesAsYouSpeak': 'Updates as you speak',
+  'ai.liveRefinedAtEnd': 'Live, will be refined at end',
+  'ai.fluency': 'Fluency',
+  'ai.technicalAccuracy': 'Technical Accuracy',
+  'ai.answerStructure': 'Answer Structure',
+  'report.rewrittenFromYourWords': 'Rewritten from your words',
+  'interview.titleDesc': 'Mock interview questions',
+  'interview.startPractice': 'Start Practice',
+
+
 
 
 

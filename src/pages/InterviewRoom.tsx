@@ -181,7 +181,7 @@ export default function InterviewRoom() {
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   rows={4}
-                  placeholder="Type your answer or use voice recording below…"
+                  placeholder={t("ai.placeholder")}
                   className="w-full mt-2 text-sm bg-card border border-border rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-ring/40"
                 />
 
@@ -206,7 +206,7 @@ export default function InterviewRoom() {
 
                   <div className="mt-2 font-mono text-lg tabular-nums">{formatTime(recordingTime)}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {isRecording ? t('ai.recording') : (userAnswer ? 'Answer saved' : 'Click mic to record')}
+                    {isRecording ? t('ai.recording') : (userAnswer ? t('ai.answerSaved') : t('ai.clickMic'))}
                   </p>
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default function InterviewRoom() {
 
           {/* Live analysis */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
-            <Panel title={t('ai.liveAnalysis')} description="Updates as you speak">
+            <Panel title={t('ai.liveAnalysis')} description={t("ai.updatesAsYouSpeak")}>
               <div>
                 <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-2">{t('ai.detectedKeywords')}</div>
                 <div className="flex flex-wrap gap-1.5">
@@ -250,12 +250,12 @@ export default function InterviewRoom() {
               </div>
             </Panel>
 
-            <Panel title={t('ai.scorePreview')} description="Live, will be refined at end">
+            <Panel title={t('ai.scorePreview')} description={t("ai.liveRefinedAtEnd")}>
               <ul className="space-y-3">
                 {[
-                  { name: 'Fluency', value: 76 },
-                  { name: 'Technical Accuracy', value: 64 },
-                  { name: 'Answer Structure', value: 58 },
+                  { name: t('ai.fluency'), value: 76 },
+                  { name: t('ai.technicalAccuracy'), value: 64 },
+                  { name: t('ai.answerStructure'), value: 58 },
                 ].map((s) => (
                   <li key={s.name}>
                     <div className="flex justify-between text-xs mb-1">
