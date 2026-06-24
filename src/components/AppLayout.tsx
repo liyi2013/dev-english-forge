@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   GraduationCap,
@@ -129,12 +129,12 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
           <Search className="w-4 h-4" />
         </button>
         <LanguageSwitcher />
-        <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary">
+        <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => toast.info(t("common.comingSoon"))}>
           <Bell className="w-4 h-4" />
         </button>
-        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold border border-border">
+        <Link to="/profile" className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold border border-border">
           JL
-        </div>
+        </Link>
       </div>
     </header>
   );

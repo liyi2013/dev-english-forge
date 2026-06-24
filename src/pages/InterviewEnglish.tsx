@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { ArrowRight, MessageSquareCode, Mic, Clock } from "lucide-react";
 
 const scenarios = [
@@ -89,7 +90,7 @@ export default function InterviewEnglish() {
               <li><span className="font-mono text-primary font-semibold">A</span> · Action — what you did</li>
               <li><span className="font-mono text-primary font-semibold">R</span> · Result — measurable outcome</li>
             </ul>
-            <Button variant="outline" size="sm" className="mt-4 w-full"><MessageSquareCode className="w-3.5 h-3.5" /> {t('interview.seeExamples')}</Button>
+            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => toast.info(t("common.comingSoon"))}><MessageSquareCode className="w-3.5 h-3.5" /> {t('interview.seeExamples')}</Button>
           </Panel>
 
           <Panel title={t('interview.lastPractice')}>

@@ -2,6 +2,7 @@ import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { getProfile, getCoreSkills, getDomainSkills, getActivities } from "@/data/mockProfile";
 
 export default function Profile() {
@@ -32,7 +33,7 @@ export default function Profile() {
               <h3 className="mt-3 text-base font-semibold">{profile.name}</h3>
               <p className="text-xs text-muted-foreground">{profile.role} · {profile.experience}</p>
               <p className="text-xs text-muted-foreground mt-1">{t('profile.title')}: {profile.target}</p>
-              <Button variant="outline" size="sm" className="mt-4">{t('profile.editProfile')}</Button>
+              <Button variant="outline" size="sm" className="mt-4" onClick={() => toast.info(t("common.comingSoon"))}>{t('profile.editProfile')}</Button>
             </div>
             <div className="grid grid-cols-2 border-t border-border">
               {stats.map((s, i) => (

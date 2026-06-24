@@ -254,9 +254,10 @@ export function generateMockReport(
   const lengthScore = Math.min(avgLength / 50, 1); // 50 chars per answer is "good"
 
   const baseScore = Math.max(50, Math.round(60 + answerRate * 20 + lengthScore * 10));
-  // Deterministic variation derived from config + question text
+  // Deterministic variation derived from config + questions + answers
+  const answerTexts = Object.values(answers).map(a => a.text).join("|");
   const seedStr = config.role + config.difficulty + config.interviewType + 
-    questions.slice(0, Math.min(questionCount, questions.length)).map(q => q.question).join("|");
+    questions.slice(0, Math.min(questionCount, questions.length)).map(q => q.question).join("|") + "|" + answerTexts;
   let seed = 0;
   for (let i = 0; i < seedStr.length; i++) {
     seed = ((seed << 5) - seed) + seedStr.charCodeAt(i);

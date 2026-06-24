@@ -77,8 +77,29 @@ describe("generateMockReport", () => {
     const reportJunior = generateMockReport(baseConfig, baseAnswers, baseQuestions);
     const reportSenior = generateMockReport(seniorConfig, baseAnswers, baseQuestions);
 
-    expect(reportJunior.config.role).not.toBe(reportSenior.config.role);
-    expect(reportJunior.config.difficulty).not.toBe(reportSenior.config.difficulty);
+    // Different configs should produce different scores
+    const scoresMatch = 
+      reportJunior.overallScore === reportSenior.overallScore &&
+      reportJunior.scores.englishExpression === reportSenior.scores.englishExpression &&
+      reportJunior.scores.technicalAccuracy === reportSenior.scores.technicalAccuracy &&
+      reportJunior.scores.answerStructure === reportSenior.scores.answerStructure &&
+      reportJunior.scores.confidence === reportSenior.scores.confidence;
+    expect(scoresMatch).toBe(false);
+  });
+
+  it("different answer texts can produce different scores", () => {
+    const shortAnswers: Record<number, { text: string; duration: number }> = {
+      0: { text: "CAP theorem.", duration: 5 },
+      1: { text: "PUT vs POST.", duration: 4 },
+    };
+    const longAnswers: Record<number, { text: string; duration: number }> = {
+      0: { text: "CAP theorem means consistency, availability, and partition tolerance. You can only pick two of three.", duration: 30 },
+      1: { text: "PUT is idempotent which means calling it multiple times gives the same result, while POST is not.", duration: 35 },
+    };
+    const reportShort = generateMockReport(baseConfig, shortAnswers, baseQuestions);
+    const reportLong = generateMockReport(baseConfig, longAnswers, baseQuestions);
+
+    expect(reportShort.overallScore).not.toBe(reportLong.overallScore);
   });
 
   it("does not use Math.random for scoring", () => {

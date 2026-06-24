@@ -62,7 +62,7 @@ export default function WorkplaceEnglish() {
                     <p className="text-sm font-medium">{p.en}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{p.cn}</p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => toast.success('Phrase saved!')}>
+                  <Button variant="ghost" size="sm" onClick={() => toast.success(t('common.saved'))}>
                     {t('workplace.savePhrase')}
                   </Button>
                 </li>
@@ -79,7 +79,7 @@ export default function WorkplaceEnglish() {
               placeholder={"Yesterday I…\nToday I…\nBlockers: …"}
               className="w-full mt-3 text-sm bg-card border border-border rounded-md p-2.5 focus:outline-none focus:ring-2 focus:ring-ring/40"
             />
-            <Button size="sm" className="mt-2 w-full" onClick={() => toast.success('AI feedback coming soon!')}>
+            <Button size="sm" className="mt-2 w-full" onClick={() => toast.info(t('common.comingSoon'))}>
               {t('workplace.getFeedback')}
             </Button>
           </Panel>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { getLearningPaths } from "@/data/mockLearningPaths";
 import { getMockTopics } from "@/data/mockTopics";
 import { ArrowRight, CheckCircle2, PlayCircle, Lock, Circle, Clock } from "lucide-react";
@@ -105,7 +106,7 @@ export default function Learning() {
       </div>
 
       <div className="mt-8">
-        <Panel title={t('learning.recommended')} action={<Button variant="ghost" size="sm">{t('common.refresh')}</Button>}>
+        <Panel title={t('learning.recommended')} action={<Button variant="ghost" size="sm" onClick={() => toast.success("Refreshed")}>{t('common.refresh')}</Button>}>
           <ul className="divide-y divide-border -my-2">
             {recommended.map((r) => (
               <li key={r.title} className="flex items-center justify-between py-3 group">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Panel } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
+import { toast } from "sonner";
 import { isLessonCompleted, markLessonCompleted } from "@/lib/mockStorage";
 import type { LearningTopic } from "@/types/learning";
 import { BookOpen, Volume2, Lightbulb, CheckCircle2 } from "lucide-react";
@@ -33,7 +34,7 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
             <span className="text-sm font-medium">{t('topic.readingPassage')}</span>
             <span className="chip">~2 min</span>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => toast.info(t("common.comingSoon"))}>
             <Volume2 className="w-3.5 h-3.5" /> {t('topic.listen')}
           </Button>
         </div>

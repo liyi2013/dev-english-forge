@@ -126,7 +126,7 @@ export default function InterviewReport() {
         subtitle={`${report.config.role} · ${report.config.difficulty} · ${report.config.questionCount} ${t('ai.question')} · ${report.config.duration}`}
         actions={
           <>
-            <Button variant="outline"><Download className="w-3.5 h-3.5" /> {t('report.exportPdf')}</Button>
+            <Button variant="outline" onClick={() => toast.success("Mock PDF export ready")}><Download className="w-3.5 h-3.5" /> {t('report.exportPdf')}</Button>
             <Link to="/ai-interview"><Button variant="outline"><RotateCcw className="w-3.5 h-3.5" /> {t('report.newSession')}</Button></Link>
           </>
         }
@@ -226,8 +226,8 @@ export default function InterviewReport() {
                   </div>
                   <p className="text-sm text-foreground leading-relaxed">{report.questionDetails[0].betterAnswerVersion}</p>
                   <div className="mt-3 flex gap-2">
-                    <Button size="sm"><Sparkles className="w-3.5 h-3.5" /> {t('report.practiceThisVersion')}</Button>
-                    <Button variant="outline" size="sm">{t('report.saveToSentences')}</Button>
+                    <Button size="sm" onClick={() => toast.info(t("common.comingSoon"))}><Sparkles className="w-3.5 h-3.5" /> {t('report.practiceThisVersion')}</Button>
+                    <Button variant="outline" size="sm" onClick={() => { saveSentence({ pattern: report.questionDetails[0].betterAnswerVersion, savedAt: new Date().toISOString() }); toast.success(t("common.saved")); }}>{t('report.saveToSentences')}</Button>
                   </div>
                 </div>
               </div>
