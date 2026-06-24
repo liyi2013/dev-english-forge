@@ -1,4 +1,6 @@
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
+import { t } from "@/i18n";
+import { toast } from "sonner";
 import { Mail, Users, GitPullRequest, MessageCircle, ArrowRight } from "lucide-react";
 
 const scenarios = [
@@ -18,20 +20,17 @@ const phrases = [
 export default function WorkplaceEnglish() {
   return (
     <div>
-      <PageHeader
-        title="Workplace English"
-        subtitle="Emails, meetings, code review, daily collaboration — the English you use after you get hired."
-      />
+      <PageHeader title={t('workplace.title')} subtitle={t('workplace.desc')} />
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-6">
           <div className="panel p-5 bg-accent border-primary/10 flex items-start justify-between gap-4">
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">Continue</div>
+              <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">{t('workplace.continue')}</div>
               <h3 className="mt-1.5 text-lg font-semibold">Ask for clarification in a meeting</h3>
               <p className="text-sm text-muted-foreground mt-1">Polite phrases, follow-ups, and tone control.</p>
             </div>
-            <Button>Continue <ArrowRight className="w-3.5 h-3.5" /></Button>
+            <Button>{t('common.continue')} <ArrowRight className="w-3.5 h-3.5" /></Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -54,7 +53,7 @@ export default function WorkplaceEnglish() {
             ))}
           </div>
 
-          <Panel title="Useful Phrases" description="Save phrases to use them in your next standup">
+          <Panel title={t('workplace.usefulPhrases')}>
             <ul className="divide-y divide-border -my-2">
               {phrases.map((p) => (
                 <li key={p.en} className="flex items-center justify-between py-3">
@@ -62,7 +61,9 @@ export default function WorkplaceEnglish() {
                     <p className="text-sm font-medium">{p.en}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{p.cn}</p>
                   </div>
-                  <Button variant="ghost" size="sm">+ Save</Button>
+                  <Button variant="ghost" size="sm" onClick={() => toast.success('Phrase saved!')}>
+                    {t('workplace.savePhrase')}
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -70,17 +71,19 @@ export default function WorkplaceEnglish() {
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-4">
-          <Panel title="Today's Mini-Drill">
+          <Panel title={t('workplace.miniDrill')}>
             <p className="text-sm">Write a 3-sentence standup update.</p>
             <textarea
               rows={5}
               placeholder={"Yesterday I…\nToday I…\nBlockers: …"}
               className="w-full mt-3 text-sm bg-card border border-border rounded-md p-2.5 focus:outline-none focus:ring-2 focus:ring-ring/40"
             />
-            <Button size="sm" className="mt-2 w-full">Get AI feedback</Button>
+            <Button size="sm" className="mt-2 w-full" onClick={() => toast.success('AI feedback coming soon!')}>
+              {t('workplace.getFeedback')}
+            </Button>
           </Panel>
 
-          <Panel title="Tone Guide">
+          <Panel title={t('workplace.toneGuide')}>
             <ul className="text-xs text-muted-foreground space-y-2 list-disc pl-4">
               <li>"Could you" sounds softer than "Can you".</li>
               <li>Use "I'd suggest" instead of "You should".</li>

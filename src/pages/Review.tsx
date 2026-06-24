@@ -1,185 +1,228 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { PageHeader, Panel, Tabs, Button, Progress } from "@/components/ui-bits";
-import { Mic, Edit3, BookOpen, AlertCircle, TrendingDown, ArrowRight } from "lucide-react";
+import { EmptyState } from "@/components/common/EmptyState";
+import { WeakPointCard } from "@/components/common/WeakPointCard";
+import { t } from "@/i18n";
+import { getReviewItems, getWeakPoints, getWeakTags } from "@/data/mockReviewItems";
+import { getSavedVocabulary, getSavedSentences, getCompletedReports } from "@/lib/mockStorage";
+import { Mic, Edit3, BookOpen, AlertCircle, TrendingDown, ArrowRight, Sparkles } from "lucide-react";
 
-const tabs = ["Wrong Answers", "Vocabulary", "Saved Sentences", "Interview Reports"];
-
-const weakTags = ["Redis cache", "System design", "Past-tense storytelling", "Idempotency", "Hot key", "Monitoring metrics"];
-
-const weakPointsSummary = [
-  {
-    theme: "Cache troubleshooting structure",
-    sources: "3 wrong answers · 2 interview reports",
-    detail: "You jump to actions before observing metrics. Practice the 'observe → narrow → act' pattern.",
-    severity: "high",
-  },
-  {
-    theme: "Vocabulary: eviction & TTL",
-    sources: "6 vocab items · 1 wrong answer",
-    detail: "Terms like eviction policy, TTL, and hot key are not yet active recall.",
-    severity: "medium",
-  },
-  {
-    theme: "Past-tense project storytelling",
-    sources: "2 interview reports",
-    detail: "Tense slips when describing what you did last quarter (STAR · Action step).",
-    severity: "medium",
-  },
-];
+const tabs = ['review.wrongAnswers', 'review.vocabulary', 'review.savedSentences', 'review.interviewReports'];
 
 export default function Review() {
-  const [tab, setTab] = useState("Wrong Answers");
+  const [tab, setTab] = useState(tabs[0]);
+  const [sortBy, setSortBy] = useState<'newest' | 'weakest'>('newest');
+
+  const reviewItems = getReviewItems();
+  const weakPoints = getWeakPoints();
+  const weakTags = getWeakTags();
+  const savedVocab = getSavedVocabulary();
+  const savedSentences = getSavedSentences();
+  const reports = getCompletedReports();
+
+  const filteredItems = sortBy === 'newest'
+    ? [...reviewItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    : [...reviewItems].filter((i) => i.status === 'pending');
 
   return (
     <div>
-      <PageHeader
-        title="Review"
-        subtitle="Close the learning loop. Fix what you got wrong, lock in what you've learned."
-      />
+      <PageHeader title={t('review.title')} subtitle={t('review.desc')} />
 
       {/* Weak Points Summary */}
       <Panel
-        title="Weak Points Summary"
-        description="Recurring problems aggregated from wrong answers, vocabulary, and interview reports."
-        action={<Button variant="ghost" size="sm">View all</Button>}
+        title={t('review.weakPointsSummary')}
+        description={t('review.weakPointsDesc')}
+        action={<Button variant="ghost" size="sm">{t('common.viewAll')}</Button>}
         className="mb-6"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {weakPointsSummary.map((w) => (
-            <div
-              key={w.theme}
-              className={`panel p-4 ${
-                w.severity === "high"
-                  ? "bg-[hsl(var(--warning)/0.06)] border-[hsl(var(--warning)/0.3)]"
-                  : ""
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <TrendingDown className={`w-3.5 h-3.5 ${w.severity === "high" ? "text-warning" : "text-muted-foreground"}`} />
-                <span className={`text-[10px] uppercase tracking-wider font-semibold ${w.severity === "high" ? "text-warning" : "text-muted-foreground"}`}>
-                  {w.severity === "high" ? "High priority" : "Recurring"}
-                </span>
-              </div>
-              <h4 className="mt-2 text-sm font-semibold leading-snug">{w.theme}</h4>
-              <p className="text-[11px] text-muted-foreground mt-1">{w.sources}</p>
-              <p className="text-xs text-foreground mt-2 leading-relaxed">{w.detail}</p>
-              <button className="mt-3 text-xs font-medium text-primary inline-flex items-center gap-1 hover:underline">
-                Open drill <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
+          {weakPoints.map((wp) => (
+            <WeakPointCard key={wp.theme} weakPoint={wp} />
           ))}
         </div>
       </Panel>
 
       <div className="panel mb-6">
-        <Tabs tabs={tabs} active={tab} onChange={setTab} />
+        <Tabs
+          tabs={tabs.map((k) => t(k))}
+          active={t(tab)}
+          onChange={(v) => {
+            const found = tabs.find((k) => t(k) === v);
+            if (found) setTab(found);
+          }}
+        />
         <div className="px-5 py-2 text-xs text-muted-foreground flex items-center justify-between">
-          <span>{tab === "Wrong Answers" ? "12 items queued · sorted by recency" : `${tab} view`}</span>
-          <div className="flex gap-2">
-            <button className="hover:text-foreground">Newest</button>
-            <span>·</span>
-            <button className="hover:text-foreground">Weakest</button>
-          </div>
+          <span>
+            {tab === tabs[0] && `${filteredItems.length} ${t('review.itemsQueued')} · ${t('common.sorted')} `}
+            {tab === tabs[1] && `${savedVocab.length} items`}
+            {tab === tabs[2] && `${savedSentences.length} items`}
+            {tab === tabs[3] && `${reports.length} reports`}
+          </span>
+          {tab === tabs[0] && (
+            <div className="flex gap-2">
+              <button
+                className={`hover:text-foreground ${sortBy === 'newest' ? 'text-foreground font-medium' : ''}`}
+                onClick={() => setSortBy('newest')}
+              >
+                {t('review.newest')}
+              </button>
+              <span>·</span>
+              <button
+                className={`hover:text-foreground ${sortBy === 'weakest' ? 'text-foreground font-medium' : ''}`}
+                onClick={() => setSortBy('weakest')}
+              >
+                {t('review.weakest')}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-4">
-          {tab === "Wrong Answers" && (
-            <>
-              <div className="panel p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="chip-amber"><AlertCircle className="w-3 h-3" /> Needs rework</span>
-                      <span className="chip">Interview · Backend</span>
-                      <span className="text-xs text-muted-foreground">From session · Jun 21</span>
+          {/* Wrong Answers Tab */}
+          {tab === tabs[0] && (
+            filteredItems.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 className="w-8 h-8" />}
+                title="All caught up!"
+                description="No pending review items. Great work!"
+                action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
+              />
+            ) : (
+              filteredItems.map((item) => (
+                <div key={item.id} className="panel p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`chip-${item.status === 'pending' ? 'amber' : 'green'}`}>
+                          <AlertCircle className="w-3 h-3" />
+                          {item.status === 'pending' ? t('review.needsRework') : 'Reviewed'}
+                        </span>
+                        <span className="chip">{item.source}</span>
+                        <span className="text-xs text-muted-foreground">{item.createdAt}</span>
+                      </div>
+                      <h3 className="mt-3 text-base font-semibold leading-relaxed">{item.title}</h3>
                     </div>
-                    <h3 className="mt-3 text-base font-semibold leading-relaxed">
-                      How would you troubleshoot Redis cache hit rate drops?
-                    </h3>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {item.userAnswer && (
+                      <div className="panel p-3 bg-background border-dashed">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
+                          {t('review.yourPreviousAnswer')}
+                        </div>
+                        <p className="text-sm text-muted-foreground italic line-clamp-4">{item.userAnswer}</p>
+                      </div>
+                    )}
+                    {item.problem && (
+                      <div className="panel p-3 bg-[hsl(var(--warning)/0.06)] border-[hsl(var(--warning)/0.3)]">
+                        <div className="text-[10px] uppercase tracking-wider text-warning font-semibold mb-1.5">
+                          {t('review.problem')}
+                        </div>
+                        <p className="text-sm text-foreground">{item.problem}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    {item.topicSlug ? (
+                      <Link to={`/technical-english/${item.topicSlug}`}>
+                        <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                      </Link>
+                    ) : (
+                      <Button onClick={() => {}}><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                    )}
+                    <Link to="/ai-interview/room">
+                      <Button variant="outline"><Mic className="w-3.5 h-3.5" /> {t('review.speakAgain')}</Button>
+                    </Link>
+                    {item.correctAnswer && (
+                      <Button variant="ghost"><BookOpen className="w-3.5 h-3.5" /> {t('review.viewSuggestedAnswer')}</Button>
+                    )}
                   </div>
                 </div>
+              ))
+            )
+          )}
 
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="panel p-3 bg-background border-dashed">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Your previous answer</div>
-                    <p className="text-sm text-muted-foreground italic line-clamp-4">
-                      "I would check the cache keys and the expiration time. Maybe the traffic pattern changed, so we need to update the cache…"
-                    </p>
+          {/* Vocabulary Tab */}
+          {tab === tabs[1] && (
+            savedVocab.length === 0 ? (
+              <EmptyState
+                icon={<BookOpen className="w-8 h-8" />}
+                title={t('review.emptyVocab')}
+                description={t('review.emptyVocabDesc')}
+                action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
+              />
+            ) : (
+              savedVocab.map((v) => (
+                <div key={v.term} className="panel p-4 flex items-center justify-between">
+                  <div>
+                    <span className="font-mono font-medium text-sm">{v.term}</span>
+                    <span className="text-xs text-muted-foreground ml-3">Saved {new Date(v.savedAt).toLocaleDateString()}</span>
                   </div>
-                  <div className="panel p-3 bg-[hsl(var(--warning)/0.06)] border-[hsl(var(--warning)/0.3)]">
-                    <div className="text-[10px] uppercase tracking-wider text-warning font-semibold mb-1.5">Problem</div>
-                    <p className="text-sm text-foreground">Missing hot key analysis and monitoring metrics. Answer ended too quickly without a structured troubleshooting flow.</p>
+                  <Button variant="ghost" size="sm">{t('common.done')}</Button>
+                </div>
+              ))
+            )
+          )}
+
+          {/* Saved Sentences Tab */}
+          {tab === tabs[2] && (
+            savedSentences.length === 0 ? (
+              <EmptyState
+                icon={<Edit3 className="w-8 h-8" />}
+                title={t('review.emptySentences')}
+                description={t('review.emptySentencesDesc')}
+                action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
+              />
+            ) : (
+              savedSentences.map((s) => (
+                <div key={s.pattern} className="panel p-4">
+                  <p className="text-sm font-mono font-medium">{s.pattern}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Saved {new Date(s.savedAt).toLocaleDateString()}</p>
+                </div>
+              ))
+            )
+          )}
+
+          {/* Interview Reports Tab */}
+          {tab === tabs[3] && (
+            reports.length === 0 ? (
+              <EmptyState
+                icon={<Mic className="w-8 h-8" />}
+                title={t('review.emptyReports')}
+                description={t('review.emptyReportsDesc')}
+                action={<Link to="/ai-interview"><Button variant="outline">{t('review.startInterview')}</Button></Link>}
+              />
+            ) : (
+              reports.map((r) => (
+                <Link key={r.id} to="/ai-interview/report" className="panel p-4 flex items-center justify-between hover:border-primary/40 transition block">
+                  <div>
+                    <p className="text-sm font-medium">Mock Interview · {new Date(r.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Score: {r.overallScore}/100</p>
                   </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <Button><Edit3 className="w-3.5 h-3.5" /> Rewrite Answer</Button>
-                  <Button variant="outline"><Mic className="w-3.5 h-3.5" /> Speak Again</Button>
-                  <Button variant="ghost"><BookOpen className="w-3.5 h-3.5" /> View Suggested Answer</Button>
-                </div>
-              </div>
-
-              <div className="panel p-5 opacity-90">
-                <div className="flex items-center gap-2">
-                  <span className="chip-amber">Needs rework</span>
-                  <span className="chip">Interview · System Design</span>
-                </div>
-                <h3 className="mt-3 text-base font-semibold">
-                  Design a URL shortener — how would you handle high read traffic?
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-                  Mentioned caching but didn't compare CDN vs in-memory cache trade-offs.
-                </p>
-              </div>
-            </>
-          )}
-
-          {tab === "Vocabulary" && (
-            <div className="panel p-10 text-center">
-              <BookOpen className="w-8 h-8 mx-auto text-muted-foreground/60" />
-              <h3 className="mt-3 text-sm font-semibold">No saved vocabulary yet</h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                Words you mark while reading or during an interview will appear here for spaced review.
-              </p>
-              <Button variant="outline" size="sm" className="mt-4">Browse Technical English</Button>
-            </div>
-          )}
-
-          {tab === "Saved Sentences" && (
-            <div className="panel p-10 text-center">
-              <Edit3 className="w-8 h-8 mx-auto text-muted-foreground/60" />
-              <h3 className="mt-3 text-sm font-semibold">No saved sentences yet</h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                Save useful sentences from lessons or your own answers to reuse in real conversations.
-              </p>
-            </div>
-          )}
-
-          {tab === "Interview Reports" && (
-            <div className="panel p-10 text-center">
-              <Mic className="w-8 h-8 mx-auto text-muted-foreground/60" />
-              <h3 className="mt-3 text-sm font-semibold">No interview reports yet</h3>
-              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                Finish an AI Interview session to get a structured report with strengths, weak points, and replay practice.
-              </p>
-              <Button variant="outline" size="sm" className="mt-4">Start AI Interview</Button>
-            </div>
+                  <span className={`font-mono text-sm font-semibold ${r.overallScore >= 70 ? 'text-success' : 'text-warning'}`}>
+                    {r.overallScore}
+                  </span>
+                </Link>
+              ))
+            )
           )}
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-4">
-          <Panel title="Weekly Review Progress">
+          <Panel title={t('review.weeklyProgress')}>
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-semibold">7<span className="text-muted-foreground text-base font-normal"> / 15</span></span>
-              <span className="text-xs text-muted-foreground">items fixed</span>
+              <span className="text-xs text-muted-foreground">{t('review.itemsFixed')}</span>
             </div>
-            <Progress value={(7/15)*100} className="mt-3" tone="success" />
+            <Progress value={46} className="mt-3" tone="success" />
             <p className="text-xs text-muted-foreground mt-3">Stay on track — fix 8 more this week to clear the queue.</p>
           </Panel>
 
-          <Panel title="Weak Skill Tags" description="Click to filter the review list">
+          <Panel title={t('review.weakSkillTags')} description="Click to filter the review list">
             <div className="flex flex-wrap gap-1.5">
               {weakTags.map((t) => (
                 <span key={t} className="chip hover:bg-accent hover:text-accent-foreground cursor-pointer">{t}</span>
@@ -187,13 +230,13 @@ export default function Review() {
             </div>
           </Panel>
 
-          <Panel title="Spaced Repetition">
+          <Panel title={t('review.spacedRepetition')}>
             <ul className="text-sm space-y-2">
-              <li className="flex justify-between"><span>Due today</span><span className="font-mono font-medium">4</span></li>
-              <li className="flex justify-between"><span>Due tomorrow</span><span className="font-mono text-muted-foreground">7</span></li>
-              <li className="flex justify-between"><span>This week</span><span className="font-mono text-muted-foreground">18</span></li>
+              <li className="flex justify-between"><span>{t('review.dueToday')}</span><span className="font-mono font-medium">4</span></li>
+              <li className="flex justify-between"><span>{t('review.dueTomorrow')}</span><span className="font-mono text-muted-foreground">7</span></li>
+              <li className="flex justify-between"><span>{t('review.thisWeek')}</span><span className="font-mono text-muted-foreground">18</span></li>
             </ul>
-            <Button variant="outline" size="sm" className="mt-4 w-full">Start review session</Button>
+            <Button variant="outline" size="sm" className="mt-4 w-full">{t('review.startSession')}</Button>
           </Panel>
         </div>
       </div>
