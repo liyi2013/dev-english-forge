@@ -130,7 +130,7 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
           <Search className="w-4 h-4" />
         </button>
         <LanguageSwitcher />
-        <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => toast.info(t("common.comingSoon"))}>
+        <button aria-label={t("common.notifications")} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => toast.info(t("common.comingSoon"))}>
           <Bell className="w-4 h-4" />
         </button>
         <Link to="/profile" className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold border border-border">

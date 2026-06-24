@@ -18,6 +18,7 @@ const zhCN: Record<string, string> = {
   'common.refresh': '刷新',
   'common.viewAll': '查看全部',
   'common.back': '返回',
+  'common.notifications': '通知',
   'common.close': '关闭',
   'common.search': '搜索',
   'common.filter': '筛选',
@@ -336,7 +337,5 @@ const zhCN: Record<string, string> = {
 
 
 
-  'nav.streak': '12 天连续学习',
-  'nav.streakHint': '继续保持，今天已学习 8 分钟。',
 };
 export default zhCN;

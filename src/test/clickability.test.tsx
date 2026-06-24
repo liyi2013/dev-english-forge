@@ -16,7 +16,13 @@ import Review from "@/pages/Review";
 import { SpeakTab } from "@/pages/topic/SpeakTab";
 import { toast } from "sonner";
 
-vi.mock("sonner");
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+  },
+}));
 
 function createMemoryLS() {
   const store: Record<string, string> = {};
@@ -267,19 +273,8 @@ describe("Button clickability — full audit", () => {
 
     it("notification bell calls toast.info", () => {
       renderWP(<AppLayout />);
-      // The bell button is the one directly inside TopHeader with onClick handler
-      // Find it by looking for buttons that are not the language switcher (has text)
-      // and not the mobile search icon
-      const buttons = screen.getAllByRole("button");
-      // Exclude buttons with visible text (LanguageSwitcher shows "EN")
-      const textButtons = buttons.filter(b => (b.textContent || "").trim().length > 0);
-      const noTextButtons = buttons.filter(b => (b.textContent || "").trim().length === 0);
-      // There should be at least one button with only SVG content (the bell)
-      expect(noTextButtons.length).toBeGreaterThanOrEqual(1);
-      // Click each no-text button until toast.info is called
-      for (const btn of noTextButtons) {
-        fireEvent.click(btn);
-      }
+      const bellBtn = screen.getByLabelText("通知");
+      fireEvent.click(bellBtn);
       expect(vi.mocked(toast.info)).toHaveBeenCalled();
     });
   });

@@ -336,7 +336,5 @@ const enUS: Record<string, string> = {
 
 
 
-  'nav.streak': '12-day streak',
-  'nav.streakHint': 'Keep it going. 8 mins today.',
 };
 export default enUS;
