@@ -278,6 +278,10 @@ const zhCN: Record<string, string> = {
   'interview.question': '面试问题',
 
   'unit.unit': '单元',
+  'topic.topicSaved': '已收藏主题',
+  'topic.topicAlreadySaved': '主题已收藏',
+  'search.removedFromVocab': '已从词汇本移除',
+  'review.reviewItemUpdated': '已标记为已复习',
   'unit.of': ' / ',
 };
 export default zhCN;

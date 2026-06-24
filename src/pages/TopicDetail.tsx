@@ -3,16 +3,13 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { PageHeader, Tabs, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { getTopicBySlug } from "@/data/mockTopics";
-import { saveVocabulary, isVocabSaved } from "@/lib/mockStorage";
 import { toast } from "sonner";
 import { ReadTab } from "./topic/ReadTab";
 import { VocabularyTab } from "./topic/VocabularyTab";
 import { SentenceTab } from "./topic/SentenceTab";
 import { SpeakTab } from "./topic/SpeakTab";
 import { InterviewTab } from "./topic/InterviewTab";
-import {
-  ArrowRight, Target, Sparkles, MessageSquare, Mic,
-} from "lucide-react";
+import { ArrowRight, Target, Sparkles, MessageSquare, Mic } from "lucide-react";
 
 const tabKeys = ["Read", "Vocabulary", "Sentence", "Speak", "Interview"];
 
@@ -24,19 +21,46 @@ const outcomeKeys: Record<string, string> = {
   Interview: "topic.outcomeInterview",
 };
 
+const SAVED_TOPICS_KEY = 'devenglish_saved_topics';
+
+function isTopicSaved(slug: string): boolean {
+  try {
+    const raw = localStorage.getItem(SAVED_TOPICS_KEY);
+    if (!raw) return false;
+    const list: string[] = JSON.parse(raw);
+    return list.includes(slug);
+  } catch {
+    return false;
+  }
+}
+
+function saveTopic(slug: string): void {
+  try {
+    const raw = localStorage.getItem(SAVED_TOPICS_KEY);
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    if (!list.includes(slug)) {
+      list.push(slug);
+      localStorage.setItem(SAVED_TOPICS_KEY, JSON.stringify(list));
+    }
+  } catch {
+    // ignore
+  }
+}
+
 function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof getTopicBySlug>> }) {
   const { t } = useI18n();
   const [tab, setTab] = useState("Read");
-  const [topicSaved, setTopicSaved] = useState(() => isVocabSaved(topic.title));
-  const tabLabels = tabKeys.map((k) => t(`topic.tab${k}` as keyof typeof import('@/i18n/locales/zh-CN').default));
+  const [topicSaved, setTopicSaved] = useState(() => isTopicSaved(topic.slug));
+
+  const tabLabels = tabKeys.map((k) => t('topic.tab' + k));
 
   const handleSaveTopic = () => {
     if (topicSaved) {
-      toast.info("Already saved");
+      toast.info(t('topic.topicAlreadySaved'));
     } else {
-      saveVocabulary({ term: topic.title, savedAt: new Date().toISOString() });
+      saveTopic(topic.slug);
       setTopicSaved(true);
-      toast.success("Topic saved");
+      toast.success(t('topic.topicSaved'));
     }
   };
 
@@ -68,10 +92,14 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
       />
 
       <div className="panel">
-        <Tabs tabs={tabLabels} active={currentTabLabel} onChange={(label) => {
-          const idx = tabLabels.indexOf(label);
-          if (idx >= 0) setTab(tabKeys[idx]);
-        }} />
+        <Tabs
+          tabs={tabLabels}
+          active={currentTabLabel}
+          onChange={(label) => {
+            const idx = tabLabels.indexOf(label);
+            if (idx >= 0) setTab(tabKeys[idx]);
+          }}
+        />
 
         <div className="px-6 py-3 border-b border-border bg-accent/40 flex items-center gap-2">
           <Target className="w-3.5 h-3.5 text-primary shrink-0" />

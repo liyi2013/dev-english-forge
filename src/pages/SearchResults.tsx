@@ -96,7 +96,7 @@ export default function SearchResults() {
     if (vocabSavedSet.has(term)) {
       removeVocabulary(term);
       setVocabSavedSet((prev) => { const next = new Set(prev); next.delete(term); return next; });
-      toast.info(`"${term}" removed`);
+      toast.info(`"${term}" ${t("search.removedFromVocab")}`);
     } else {
       saveVocabulary({ term, savedAt: new Date().toISOString() });
       setVocabSavedSet((prev) => { const next = new Set(prev); next.add(term); return next; });

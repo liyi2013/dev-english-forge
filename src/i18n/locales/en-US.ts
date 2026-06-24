@@ -278,6 +278,10 @@ const enUS: Record<string, string> = {
   'interview.question': 'Interview question',
 
   'unit.unit': 'Unit',
+  'topic.topicSaved': 'Topic saved',
+  'topic.topicAlreadySaved': 'Already saved',
+  'search.removedFromVocab': 'Removed from vocabulary',
+  'review.reviewItemUpdated': 'Marked as reviewed',
   'unit.of': ' of ',
 };
 export default enUS;

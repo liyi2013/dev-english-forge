@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Tabs, Button, Progress } from "@/components/ui-bits";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -6,10 +6,30 @@ import { WeakPointCard } from "@/components/common/WeakPointCard";
 import { useI18n } from "@/i18n";
 import { toast } from "sonner";
 import { getReviewItems, getWeakPoints, getWeakTags } from "@/data/mockReviewItems";
-import { getSavedVocabulary, getSavedSentences, getCompletedReports, updateReviewItemStatus } from "@/lib/mockStorage";
+import {
+  getSavedVocabulary,
+  getSavedSentences,
+  getCompletedReports,
+  getReviewQueue,
+  updateReviewItemStatus,
+  type ReviewQueueItem,
+} from "@/lib/mockStorage";
+import type { ReviewItem } from "@/types/review";
 import { Mic, Edit3, BookOpen, AlertCircle, CheckCircle2 } from "lucide-react";
 
 const tabKeys = ['review.wrongAnswers', 'review.vocabulary', 'review.savedSentences', 'review.interviewReports'];
+
+type DisplayItem = (ReviewItem | ReviewQueueItem) & {
+  _id: string;
+  _type: 'mock' | 'queue';
+  _title: string;
+  _source: string;
+  _status: 'pending' | 'reviewed' | 'mastered';
+  _userAnswer?: string;
+  _problem?: string;
+  _correctAnswer?: string;
+  _topicSlug?: string;
+};
 
 export default function Review() {
   const { t } = useI18n();
@@ -18,14 +38,47 @@ export default function Review() {
   const [sortBy, setSortBy] = useState<'newest' | 'weakest'>('newest');
   const [expandedAnswers, setExpandedAnswers] = useState<Set<string>>(new Set());
   const [vocabDone, setVocabDone] = useState<Set<string>>(new Set());
-  const [, forceUpdate] = useState(0);
+  const reviewListRef = useRef<HTMLDivElement>(null);
+
+  // --- Initialize local review items from both mock data and localStorage ---
+  const [mockItems] = useState(getReviewItems);
+
+  const [queueItems, setQueueItems] = useState<ReviewQueueItem[]>(() => getReviewQueue());
+
+  // Merge into display items with safe defaults
+  const [displayItems, setDisplayItems] = useState<DisplayItem[]>(() => {
+    const mock: DisplayItem[] = mockItems.map((item) => ({
+      ...item,
+      _id: item.id,
+      _type: 'mock' as const,
+      _title: item.title,
+      _source: item.source,
+      _status: item.status,
+      _userAnswer: item.userAnswer,
+      _problem: item.problem,
+      _correctAnswer: item.correctAnswer,
+      _topicSlug: item.topicSlug,
+    }));
+    const queue: DisplayItem[] = queueItems.map((item) => ({
+      ...item,
+      _id: item.id,
+      _type: 'queue' as const,
+      _title: item.title,
+      _source: item.source,
+      _status: item.status as 'pending' | 'reviewed' | 'mastered',
+      _userAnswer: undefined,
+      _problem: undefined,
+      _correctAnswer: undefined,
+      _topicSlug: item.topicSlug,
+    }));
+    return [...mock, ...queue];
+  });
 
   const setTab = (label: string) => {
     const idx = tabLabels.indexOf(label);
     if (idx >= 0) setTabRaw(tabKeys[idx]);
   };
 
-  const reviewItems = getReviewItems();
   const weakPoints = getWeakPoints();
   const weakTags = getWeakTags();
   const savedVocab = getSavedVocabulary();
@@ -33,8 +86,12 @@ export default function Review() {
   const reports = getCompletedReports();
 
   const filteredItems = sortBy === 'newest'
-    ? [...reviewItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    : [...reviewItems].filter((i) => i.status === 'pending');
+    ? [...displayItems].sort((a, b) => {
+        const da = 'createdAt' in a ? new Date(a.createdAt).getTime() : 0;
+        const db = 'createdAt' in b ? new Date(b.createdAt).getTime() : 0;
+        return db - da;
+      })
+    : displayItems.filter((i) => i._status === 'pending');
 
   const handleToggleAnswer = (id: string) => {
     setExpandedAnswers((prev) => {
@@ -45,19 +102,23 @@ export default function Review() {
     });
   };
 
+  const handleReviewDone = (id: string) => {
+    setDisplayItems((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, _status: 'reviewed' as const } : item
+      )
+    );
+    updateReviewItemStatus(id, 'reviewed');
+    toast.success(t('review.reviewItemUpdated'));
+  };
+
   const handleVocabDone = (term: string) => {
-    setVocabDone((prev) => {
-      const next = new Set(prev);
-      next.add(term);
-      return next;
-    });
+    setVocabDone((prev) => new Set(prev).add(term));
     toast.success(t('review.markedReviewed'));
   };
 
-  const handleReviewDone = (id: string) => {
-    updateReviewItemStatus(id, 'reviewed');
-    forceUpdate((n) => n + 1);
-    toast.success(t('review.markedReviewed'));
+  const handleViewAll = () => {
+    reviewListRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -68,9 +129,7 @@ export default function Review() {
         title={t('review.weakPointsSummary')}
         description={t('review.weakPointsDesc')}
         action={
-          <Button variant="ghost" size="sm" onClick={() => {
-            document.querySelector('.space-y-4')?.scrollIntoView({ behavior: 'smooth' });
-          }}>
+          <Button variant="ghost" size="sm" onClick={handleViewAll}>
             {t('common.viewAll')}
           </Button>
         }
@@ -112,7 +171,7 @@ export default function Review() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-6" ref={reviewListRef}>
         <div className="col-span-12 lg:col-span-8 space-y-4">
           {tab === tabKeys[0] && (
             filteredItems.length === 0 ? (
@@ -123,74 +182,86 @@ export default function Review() {
                 action={<Link to="/technical-english"><Button variant="outline">{t('review.browseTech')}</Button></Link>}
               />
             ) : (
-              filteredItems.map((item) => (
-                <div key={item.id} className="panel p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`${item.status === 'pending' ? 'chip-amber' : 'chip-green'}`}>
-                          <AlertCircle className="w-3 h-3" />
-                          {item.status === 'pending' ? t('review.needsRework') : t('review.reviewed')}
-                        </span>
-                        <span className="chip">{item.source}</span>
-                        <span className="text-xs text-muted-foreground">{item.createdAt}</span>
-                      </div>
-                      <h3 className="mt-3 text-base font-semibold leading-relaxed">{item.title}</h3>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {item.userAnswer && (
-                      <div className="panel p-3 bg-background border-dashed">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
-                          {t('review.yourPreviousAnswer')}
+              filteredItems.map((item) => {
+                const isReviewed = item._status === 'reviewed' || item._status === 'mastered';
+                return (
+                  <div key={item._id} className="panel p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={isReviewed ? 'chip-green' : 'chip-amber'}>
+                            <AlertCircle className="w-3 h-3" />
+                            {isReviewed ? t('review.reviewed') : t('review.needsRework')}
+                          </span>
+                          <span className="chip">{item._source}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {'createdAt' in item ? item.createdAt : ''}
+                          </span>
                         </div>
-                        <p className="text-sm text-muted-foreground italic line-clamp-4">{item.userAnswer}</p>
+                        <h3 className="mt-3 text-base font-semibold leading-relaxed">{item._title}</h3>
+                      </div>
+                    </div>
+
+                    {(item._userAnswer || item._problem) && (
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {item._userAnswer && (
+                          <div className="panel p-3 bg-background border-dashed">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">
+                              {t('review.yourPreviousAnswer')}
+                            </div>
+                            <p className="text-sm text-muted-foreground italic line-clamp-4">{item._userAnswer}</p>
+                          </div>
+                        )}
+                        {item._problem && (
+                          <div className="panel p-3 bg-[hsl(var(--warning)/0.06)] border-[hsl(var(--warning)/0.3)]">
+                            <div className="text-[10px] uppercase tracking-wider text-warning font-semibold mb-1.5">
+                              {t('review.problem')}
+                            </div>
+                            <p className="text-sm text-foreground">{item._problem}</p>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {item.problem && (
-                      <div className="panel p-3 bg-[hsl(var(--warning)/0.06)] border-[hsl(var(--warning)/0.3)]">
-                        <div className="text-[10px] uppercase tracking-wider text-warning font-semibold mb-1.5">
-                          {t('review.problem')}
+
+                    {expandedAnswers.has(item._id) && item._correctAnswer && (
+                      <div className="mt-3 panel p-3 bg-accent/30 border-primary/20">
+                        <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
+                          {t('review.viewSuggestedAnswer')}
                         </div>
-                        <p className="text-sm text-foreground">{item.problem}</p>
+                        <p className="text-sm text-foreground">{item._correctAnswer}</p>
                       </div>
                     )}
-                  </div>
 
-                  {expandedAnswers.has(item.id) && item.correctAnswer && (
-                    <div className="mt-3 panel p-3 bg-accent/30 border-primary/20">
-                      <div className="text-[10px] uppercase tracking-wider text-primary font-semibold mb-1">
-                        {t('review.viewSuggestedAnswer')}
-                      </div>
-                      <p className="text-sm text-foreground">{item.correctAnswer}</p>
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    {item.topicSlug ? (
-                      <Link to={`/technical-english/${item.topicSlug}`}>
-                        <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      {item._topicSlug ? (
+                        <Link to={`/technical-english/${item._topicSlug}`}>
+                          <Button><Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}</Button>
+                        </Link>
+                      ) : (
+                        <Button onClick={() => toast.info(t('common.comingSoon'))}>
+                          <Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}
+                        </Button>
+                      )}
+                      <Link to="/ai-interview/room">
+                        <Button variant="outline"><Mic className="w-3.5 h-3.5" /> {t('review.speakAgain')}</Button>
                       </Link>
-                    ) : (
-                      <Button onClick={() => toast.info(t('common.comingSoon'))}>
-                        <Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}
+                      {item._correctAnswer && (
+                        <Button variant="ghost" onClick={() => handleToggleAnswer(item._id)}>
+                          <BookOpen className="w-3.5 h-3.5" /> {t('review.viewSuggestedAnswer')}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleReviewDone(item._id)}
+                        disabled={isReviewed}
+                      >
+                        {isReviewed ? t('review.reviewed') : t('common.done')}
                       </Button>
-                    )}
-                    <Link to="/ai-interview/room">
-                      <Button variant="outline"><Mic className="w-3.5 h-3.5" /> {t('review.speakAgain')}</Button>
-                    </Link>
-                    {item.correctAnswer && (
-                      <Button variant="ghost" onClick={() => handleToggleAnswer(item.id)}>
-                        <BookOpen className="w-3.5 h-3.5" /> {t('review.viewSuggestedAnswer')}
-                      </Button>
-                    )}
-                    <Button variant="ghost" size="sm" onClick={() => handleReviewDone(item.id)}>
-                      {t('common.done')}
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )
           )}
 
