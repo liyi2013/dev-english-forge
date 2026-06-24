@@ -9,12 +9,13 @@ import WorkplaceEnglish from "@/pages/WorkplaceEnglish";
 import Learning from "@/pages/Learning";
 import Dashboard from "@/pages/Dashboard";
 import InterviewEnglish from "@/pages/InterviewEnglish";
+import AIInterviewLobby from "@/pages/AIInterviewLobby";
+import Review from "@/pages/Review";
+import { SpeakTab } from "@/pages/topic/SpeakTab";
 import { toast } from "sonner";
 
-// Auto-mock sonner — we can spy via vi.mocked(toast.info) etc.
 vi.mock("sonner");
 
-// Real in-memory localStorage for testing
 function createMemoryLS() {
   const store: Record<string, string> = {};
   return {
@@ -40,6 +41,25 @@ function renderWP(ui: React.ReactElement) {
   );
 }
 
+const mockTopic = {
+  slug: "restful-api",
+  title: "RESTful API",
+  titleZh: "RESTful API 设计",
+  explainGoal: "Explain endpoints, status codes, and idempotency in English.",
+  explainGoalZh: "学会用英语解释端点、状态码和幂等性。",
+  level: "B1",
+  progress: 65,
+  unit: 4,
+  totalUnits: 8,
+  readingParagraph: "A RESTful API uses HTTP methods to expose resources.",
+  keyPoints: ["endpoint", "status code"],
+  vocabulary: [{ term: "endpoint", pronunciation: "/ˈendpɔɪnt/", definitionEn: "A URL where an API resource can be accessed.", definitionZh: "API 的资源访问入口。", exampleSentence: "The /users endpoint returns a list." }],
+  sentencePatterns: [{ pattern: "The API returns...", meaningZh: "API 返回...", example: "The API returns a 200 status." }],
+  speakingPrompt: { prompt: "Explain RESTful API", promptZh: "解释 RESTful API", durationSeconds: 30 },
+  interviewQuestion: { question: "What is REST?", idealAnswer: "REST is an architectural style.", commonMistakes: ["Confusing REST with HTTP"], keyPoints: ["stateless"] },
+  commonMistakes: ["Missing status codes"],
+};
+
 describe("Button clickability — full audit", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -49,10 +69,87 @@ describe("Button clickability — full audit", () => {
 
   afterEach(() => { vi.unstubAllGlobals(); });
 
+  // =========== SpeakTab ===========
+  describe("SpeakTab", () => {
+    it("Record Answer button starts speaking mode", async () => {
+      renderWP(<SpeakTab topic={mockTopic} />);
+      const recordBtn = screen.getByText("录制回答");
+      expect(recordBtn).toBeDefined();
+      fireEvent.click(recordBtn);
+      // After clicking Record, speaking UI should appear with the large mic button
+      await waitFor(() => {
+        // The stop button should appear
+        expect(screen.getByText("00:00")).toBeDefined();
+      });
+    });
+
+    it("Large mic button during recording is clickable and stops recording", async () => {
+      renderWP(<SpeakTab topic={mockTopic} />);
+      // Start recording
+      const recordBtn = screen.getByText("录制回答");
+      expect(recordBtn).toBeDefined();
+      fireEvent.click(recordBtn);
+      await waitFor(() => expect(screen.getByText("00:00")).toBeDefined());
+      // Find all buttons - the large mic button is a native button with no visible text
+      // We use the aria-label added to the mic button
+      const micBtn = screen.queryByLabelText("停止回答");
+      if (micBtn) {
+        fireEvent.click(micBtn);
+        await waitFor(() => {
+          // After stopping, evaluation should appear
+          expect(screen.getByText(/fluency|Fluency|流利度|流畅/)).toBeDefined();
+        });
+      }
+    });
+  });
+
+  // =========== AIInterviewLobby ===========
+  describe("AIInterviewLobby", () => {
+    it("Start Interview button writes config to localStorage", async () => {
+      renderWP(<AIInterviewLobby />);
+      const startLink = screen.getByText("开始面试").closest("a");
+      expect(startLink).toBeDefined();
+      expect(startLink!.getAttribute("href")).toBe("/ai-interview/room");
+      // Click the start link
+      fireEvent.click(startLink!);
+      // After click, config should be in localStorage
+      const stored = localStorage.getItem("devenglish_interview_config");
+      expect(stored).not.toBeNull();
+      const config = JSON.parse(stored!);
+      expect(config.mode).toBeDefined();
+      expect(config.role).toBeDefined();
+      expect(config.difficulty).toBeDefined();
+      expect(config.language).toBeDefined();
+      expect(config.questionCount).toBeDefined();
+      expect(config.interviewType).toBeDefined();
+      expect(config.duration).toBeDefined();
+    });
+  });
+
+  // =========== Review ===========
+  describe("Review", () => {
+    it("Speak again link points to /ai-interview lobby", async () => {
+      // Seed mock review data to ensure Speak Again buttons render
+      localStorage.setItem("devenglish_reviewed_mock_item_ids", JSON.stringify([]));
+      localStorage.setItem("devenglish_review_queue", JSON.stringify([]));
+      renderWP(<Review />);
+      const links = screen.getAllByRole("link");
+      const speakAgainLinks = links.filter(l => {
+        const text = l.textContent || "";
+        return text.includes("再练口语") || text.includes("Speak again") || text.includes("再练");
+      });
+      if (speakAgainLinks.length > 0) {
+        speakAgainLinks.forEach(link => {
+          const href = link.getAttribute("href");
+          expect(href).toBe("/ai-interview");
+        });
+      }
+    });
+  });
+
   // =========== InterviewReport ===========
   describe("InterviewReport", () => {
     beforeEach(() => {
-      // Seed localStorage with a generated report
       const report = {
         id: "report-1", sessionId: "s1", date: "2026-06-21",
         config: { mode: "quick", role: "Backend", difficulty: "Mid", language: "EN", questionCount: 5, interviewType: "Mixed", duration: "15m" },

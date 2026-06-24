@@ -255,7 +255,7 @@ export default function Review() {
                           <Edit3 className="w-3.5 h-3.5" /> {t('review.rewriteAnswer')}
                         </Button>
                       )}
-                      <Link to="/ai-interview/room">
+                      <Link to="/ai-interview">
                         <Button variant="outline"><Mic className="w-3.5 h-3.5" /> {t('review.speakAgain')}</Button>
                       </Link>
                       {item._correctAnswer && (

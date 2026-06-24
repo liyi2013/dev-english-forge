@@ -77,7 +77,7 @@ export function SpeakTab({ topic }: { topic: LearningTopic }) {
           <>
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse" />
-              <button className="relative w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+              <button onClick={handleStopSpeaking} aria-label={t("ai.stopAnswer")} className="relative w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
                 <Mic className="w-7 h-7" />
               </button>
             </div>
