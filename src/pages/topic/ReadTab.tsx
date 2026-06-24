@@ -1,16 +1,63 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button, Panel } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
-import { toast } from "sonner";
 import { isLessonCompleted, markLessonCompleted } from "@/lib/mockStorage";
 import type { LearningTopic } from "@/types/learning";
-import { BookOpen, Volume2, Lightbulb, CheckCircle2 } from "lucide-react";
+import { BookOpen, Volume2, VolumeX, Lightbulb, CheckCircle2 } from "lucide-react";
 
 export function ReadTab({ topic }: { topic: LearningTopic }) {
   const { t } = useI18n();
   const [completed, setCompleted] = useState(() => isLessonCompleted(topic.slug));
   const [understandingAnswer, setUnderstandingAnswer] = useState("");
   const [understandingResult, setUnderstandingResult] = useState<boolean | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      setSpeechSupported(false);
+    }
+  }, []);
+
+  // Cancel speech on unmount
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const handleListen = () => {
+    if (!window.speechSynthesis) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const text = topic.readingParagraph
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\n+/g, ' ')
+      .trim();
+
+    if (!text) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleMarkRead = () => {
     if (!completed) {
@@ -34,8 +81,12 @@ export function ReadTab({ topic }: { topic: LearningTopic }) {
             <span className="text-sm font-medium">{t('topic.readingPassage')}</span>
             <span className="chip">~2 min</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => toast.info(t("common.comingSoon"))}>
-            <Volume2 className="w-3.5 h-3.5" /> {t('topic.listen')}
+          <Button variant="ghost" size="sm" onClick={handleListen}>
+            {isSpeaking ? (
+              <><VolumeX className="w-3.5 h-3.5" /> {t('topic.stopListen')}</>
+            ) : (
+              <><Volume2 className="w-3.5 h-3.5" /> {t('topic.listen')}</>
+            )}
           </Button>
         </div>
 

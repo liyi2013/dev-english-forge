@@ -157,6 +157,7 @@ const zhCN: Record<string, string> = {
   'topic.learningOutcome': '学习目标',
   'topic.readingPassage': '阅读文章',
   'topic.keyPoints': '要点',
+  'topic.stopListen': '停止朗读',
   'topic.listen': '听音频',
   'topic.markAsRead': '标记已读',
   'topic.translate': '中文翻译',

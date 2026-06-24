@@ -156,6 +156,7 @@ const enUS: Record<string, string> = {
   'topic.learningOutcome': 'Learning outcome',
   'topic.readingPassage': 'Reading passage',
   'topic.keyPoints': 'Key Points',
+  'topic.stopListen': 'Stop',
   'topic.listen': 'Listen',
   'topic.markAsRead': 'Mark as read',
   'topic.translate': 'Translate (中文)',
