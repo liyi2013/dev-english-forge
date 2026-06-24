@@ -14,9 +14,9 @@ const scenarios = [
 ];
 
 const banks = [
-  { tag: "Backend", title: "Explain a recent backend project", count: 12 },
-  { tag: "System Design", title: "Design a rate limiter", count: 8 },
-  { tag: "Behavioral", title: "Tell me about a time you disagreed", count: 15 },
+  { slug: "backend", tag: "Backend", title: "Explain a recent backend project", count: 12 },
+  { slug: "system-design", tag: "System Design", title: "Design a rate limiter", count: 8 },
+  { slug: "behavioral", tag: "Behavioral", title: "Tell me about a time you disagreed", count: 15 },
 ];
 
 export default function InterviewEnglish() {
@@ -74,7 +74,7 @@ export default function InterviewEnglish() {
                   </div>
                   <div className="flex items-center gap-3 text-muted-foreground text-xs">
                     <span>{b.count} {t('interview.questions')}</span>
-                    <Link to="/ai-interview"><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
+                    <Link to={`/interview-english/question-banks/${b.slug}`}><Button variant="outline" size="sm">{t('common.start')}</Button></Link>
                   </div>
                 </li>
               ))}
@@ -90,7 +90,7 @@ export default function InterviewEnglish() {
               <li><span className="font-mono text-primary font-semibold">A</span> · Action — what you did</li>
               <li><span className="font-mono text-primary font-semibold">R</span> · Result — measurable outcome</li>
             </ul>
-            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => toast.info(t("common.comingSoon"))}><MessageSquareCode className="w-3.5 h-3.5" /> {t('interview.seeExamples')}</Button>
+            <Link to="/interview-english/star-examples"><Button variant="outline" size="sm" className="mt-4 w-full"><MessageSquareCode className="w-3.5 h-3.5" /> {t('interview.seeExamples')}</Button></Link>
           </Panel>
 
           <Panel title={t('interview.lastPractice')}>

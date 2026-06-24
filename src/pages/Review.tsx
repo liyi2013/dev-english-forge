@@ -41,6 +41,7 @@ export default function Review() {
   const [sortBy, setSortBy] = useState<'newest' | 'weakest'>('newest');
   const [expandedAnswers, setExpandedAnswers] = useState<Set<string>>(new Set());
   const [vocabDone, setVocabDone] = useState<Set<string>>(new Set());
+  const [selectedWeakTag, setSelectedWeakTag] = useState<string | null>(null);
   const reviewListRef = useRef<HTMLDivElement>(null);
 
   const [mockItems] = useState(() => getReviewItems().map((item) => ({
@@ -90,13 +91,20 @@ export default function Review() {
   const savedSentences = getSavedSentences();
   const reports = getCompletedReports();
 
+  const tagFiltered = selectedWeakTag
+    ? displayItems.filter((i) => {
+        const tags = (i as any).tags || (i as any)._tags || [];
+        const itemText = ((i._title || '') + ' ' + (i._problem || '') + ' ' + (i._source || '')).toLowerCase();
+        return tags.some((t: string) => t.toLowerCase().includes(selectedWeakTag.toLowerCase())) || itemText.includes(selectedWeakTag.toLowerCase());
+      })
+    : displayItems;
   const filteredItems = sortBy === 'newest'
-    ? [...displayItems].sort((a, b) => {
+    ? [...tagFiltered].sort((a, b) => {
         const da = 'createdAt' in a ? new Date(a.createdAt).getTime() : 0;
         const db = 'createdAt' in b ? new Date(b.createdAt).getTime() : 0;
         return db - da;
       })
-    : displayItems.filter((i) => i._status === 'pending');
+    : tagFiltered.filter((i) => i._status === 'pending');
 
   const handleToggleAnswer = (id: string) => {
     setExpandedAnswers((prev) => {
@@ -355,13 +363,19 @@ export default function Review() {
                 <span
                   key={tag}
                   className="chip hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                  onClick={() => toast.info(t('review.filterComingSoon'))}
+                  onClick={() => setSelectedWeakTag(selectedWeakTag === tag ? null : tag)}
                 >
                   {tag}
                 </span>
               ))}
             </div>
           </Panel>
+            {selectedWeakTag && (
+              <div className="flex items-center justify-between px-5 py-2 bg-accent/50 rounded-b-md -mt-1 mb-4">
+                <span className="text-xs text-muted-foreground">{t('review.activeFilter')} <strong>{selectedWeakTag}</strong></span>
+                <button onClick={() => setSelectedWeakTag(null)} className="text-xs text-primary hover:underline">{t('review.clearFilter')}</button>
+              </div>
+            )}
 
           <Panel title={t('review.spacedRepetition')}>
             <ul className="text-sm space-y-2">

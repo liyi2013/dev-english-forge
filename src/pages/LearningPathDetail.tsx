@@ -88,8 +88,8 @@ export default function LearningPathDetail() {
 
       <PageHeader title={path.nameZh || path.name} subtitle={path.descZh || path.desc} />
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,360px)]">
+        <div className="min-w-0 space-y-6">
           {/* Progress + milestone */}
           <Panel title={t('learning.milestone')}>
             <div className="space-y-4">
@@ -202,7 +202,7 @@ export default function LearningPathDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="min-w-0 space-y-4">
           <Panel title={t('common.continue')}>
             <p className="text-xs text-muted-foreground">{t('learning.nextMilestone')}</p>
             <p className="text-sm font-medium mt-1">{path.milestoneZh || path.milestone}</p>

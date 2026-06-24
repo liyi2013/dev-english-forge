@@ -18,7 +18,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
-import { toast } from "sonner";
 
 const navItems = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
@@ -130,9 +129,9 @@ function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
           <Search className="w-4 h-4" />
         </button>
         <LanguageSwitcher />
-        <button aria-label={t("common.notifications")} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary" onClick={() => toast.info(t("common.comingSoon"))}>
+        <Link to="/notifications" aria-label={t("common.notifications")} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary">
           <Bell className="w-4 h-4" />
-        </button>
+        </Link>
         <Link to="/profile" className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold border border-border">
           JL
         </Link>

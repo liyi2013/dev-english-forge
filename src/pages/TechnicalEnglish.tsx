@@ -78,7 +78,7 @@ export default function TechnicalEnglish() {
               <h2 className="text-sm font-semibold text-foreground">{t('tech.title')}</h2>
               <span className="text-xs text-muted-foreground">{topics.length} {t('tech.topics')}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
               {topics.map((topic) => (
                 <TopicCard
                   key={topic.slug}

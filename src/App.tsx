@@ -22,6 +22,9 @@ import LearningPathDetail from "./pages/LearningPathDetail";
 import ReviewSession from "./pages/ReviewSession";
 import TechnicalPlan from "./pages/TechnicalPlan";
 import InterviewScenarioDetail from "./pages/InterviewScenarioDetail";
+import InterviewQuestionBankDetail from "./pages/InterviewQuestionBankDetail";
+import StarExamples from "./pages/StarExamples";
+import Notifications from "./pages/Notifications";
 import WorkplaceScenarioDetail from "./pages/WorkplaceScenarioDetail";
 const queryClient = new QueryClient();
 
@@ -41,6 +44,8 @@ const App = () => (
             <Route path="/technical-english/paths/:pathSlug" element={<TechnicalPathDetail />} />
             <Route path="/technical-english/:topicSlug" element={<TopicDetail />} />
             <Route path="/interview-english/scenarios/:slug" element={<InterviewScenarioDetail />} />
+            <Route path="/interview-english/question-banks/:bankSlug" element={<InterviewQuestionBankDetail />} />
+            <Route path="/interview-english/star-examples" element={<StarExamples />} />
             <Route path="/interview-english" element={<InterviewEnglish />} />
             <Route path="/workplace-english" element={<WorkplaceEnglish />} />
             <Route path="/workplace-english/scenarios/:slug" element={<WorkplaceScenarioDetail />} />            <Route path="/ai-interview" element={<AIInterviewLobby />} />
@@ -50,7 +55,7 @@ const App = () => (
             <Route path="/ai-interview/report/:reportId/practice" element={<ReportPractice />} />            <Route path="/review/session" element={<ReviewSession />} />
             <Route path="/review" element={<Review />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/edit" element={<ProfileEdit />} />            <Route path="/search" element={<SearchResults />} />
+            <Route path="/profile/edit" element={<ProfileEdit />} />            <Route path="/notifications" element={<Notifications />} />            <Route path="/search" element={<SearchResults />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

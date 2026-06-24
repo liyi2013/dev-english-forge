@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Panel, Button, Progress } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
-import { getQuestionsByMode } from "@/data/mockInterviewSessions";
+import { getQuestionsByConfig } from "@/data/mockInterviewSessions";
 import { generateMockReport } from "@/data/mockReports";
 import { getInterviewConfig, clearInterviewProgress, saveGeneratedReport, addReport } from "@/lib/mockStorage";
 import { Mic, Square, ChevronLeft, ChevronRight, X, CheckCircle2, AlertCircle, FileText } from "lucide-react";
@@ -11,7 +11,7 @@ export default function InterviewRoom() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const config = getInterviewConfig();
-  const questions = config ? getQuestionsByMode(config.mode) : [];
+  const questions = config ? getQuestionsByConfig(config) : [];
   const questionCount = config?.questionCount ?? 5;
   const displayQuestions = questions.slice(0, Math.min(questionCount, questions.length));
 

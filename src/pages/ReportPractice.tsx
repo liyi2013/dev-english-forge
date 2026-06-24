@@ -19,6 +19,22 @@ function splitIntoChunks(text: string): string[] {
 
 export default function ReportPractice() {
   const { reportId } = useParams<{ reportId: string }>();
+  const [practiceHistory, setPracticeHistory] = useState<{ time: string; score: number; answerSummary: string }[]>(() => {
+    try {
+      const raw = localStorage.getItem("devenglish_report_practice");
+      if (!raw) return [];
+      const all = JSON.parse(raw);
+      return (Array.isArray(all) ? all : [])
+        .filter((r: any) => r.reportId === reportId)
+        .slice(-5)
+        .reverse()
+        .map((r: any) => ({
+          time: r.timestamp || r.time || new Date().toISOString(),
+          score: r.score || 0,
+          answerSummary: (r.answer || r.practiceAnswer || "").slice(0, 60) + ((r.answer || r.practiceAnswer || "").length > 60 ? "..." : ""),
+        }));
+    } catch { return []; }
+  });
   const { t, locale } = useI18n();
   const report = reportId ? getReportById(reportId) : undefined;
 
@@ -408,6 +424,26 @@ export default function ReportPractice() {
 
         {/* Right sidebar */}
         <div className="col-span-12 lg:col-span-4 space-y-4">
+          <Panel title={t("reportPractice.practiceHistory")}>
+            {practiceHistory.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("reportPractice.noPracticeHistory")}</p>
+            ) : (
+              <div className="space-y-3">
+                {practiceHistory.map((h, i) => (
+                  <div key={i} className="text-sm border-b border-border pb-2 last:border-0 last:pb-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{new Date(h.time).toLocaleDateString()} {new Date(h.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                      <span className="font-mono text-xs font-semibold">{h.score}/100</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{h.answerSummary}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            {practiceHistory.length > 0 && (
+              <button onClick={() => { localStorage.removeItem("devenglish_report_practice"); setPracticeHistory([]); }} className="text-xs text-muted-foreground hover:text-foreground mt-3 inline-block">{t("reportPractice.clearHistory")}</button>
+            )}
+          </Panel>
           <Panel title={t("reportPractice.nextActions")}>
             <div className="space-y-3">
               <Link to={`/ai-interview/report/${reportId}`} className="block">

@@ -47,7 +47,7 @@ export default function Learning() {
     <div>
       <PageHeader title={t('learning.center')} subtitle={t('learning.desc')} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-w-0">
         {paths.map((p) => {
           const pp = pathProgress(p.modules);
           return (

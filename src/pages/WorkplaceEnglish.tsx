@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/i18n";
@@ -20,6 +21,30 @@ const phrases = [
 ];
 
 export default function WorkplaceEnglish() {
+  const [drillText, setDrillText] = useState("");
+  const [drillFeedback, setDrillFeedback] = useState<{ score: number; suggestion: string } | null>(null);
+
+  const handleDrillSubmit = () => {
+    if (!drillText.trim()) { toast.info(t("workplace.drillEmptyHint")); return; }
+    const wordCount = drillText.trim().split(/\s+/).length;
+    const hasYesterday = /yesterday/i.test(drillText);
+    const hasToday = /today/i.test(drillText);
+    const hasBlocker = /blocker|stuck|issue|waiting/i.test(drillText);
+    let score = 60;
+    if (hasYesterday) score += 10;
+    if (hasToday) score += 10;
+    if (hasBlocker) score += 10;
+    if (wordCount >= 20 && wordCount <= 50) score += 10;
+    else if (wordCount > 50) score += 5;
+    const suggestions = [];
+    if (!hasYesterday) suggestions.push(t("workplace.drillHintYesterday"));
+    if (!hasToday) suggestions.push(t("workplace.drillHintToday"));
+    if (!hasBlocker) suggestions.push(t("workplace.drillHintBlocker"));
+    if (wordCount < 15) suggestions.push(t("workplace.drillHintLength"));
+    if (suggestions.length === 0) suggestions.push(t("workplace.drillHintGreat"));
+    setDrillFeedback({ score, suggestion: suggestions.join(" ") });
+    toast.success(t("workplace.drillFeedbackReady"));
+  };
   const { t } = useI18n();
   return (
     <div>
@@ -83,12 +108,33 @@ export default function WorkplaceEnglish() {
             <p className="text-sm">{t('workplace.standupDrillPrompt')}</p>
             <textarea
               rows={5}
+              value={drillText}
+              onChange={(e) => setDrillText(e.target.value)}
               placeholder={"Yesterday I…\nToday I…\nBlockers: …"}
               className="w-full mt-3 text-sm bg-card border border-border rounded-md p-2.5 focus:outline-none focus:ring-2 focus:ring-ring/40"
             />
-            <Button size="sm" className="mt-2 w-full" onClick={() => toast.info(t('common.comingSoon'))}>
-              {t('workplace.getFeedback')}
-            </Button>
+            {drillFeedback ? (
+              <div className="mt-3 space-y-2">
+                <div className="bg-accent rounded-md p-3">
+                  <p className="text-xs font-semibold text-foreground mb-1">{t('workplace.drillScore')}</p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-bold">{drillFeedback.score}</span>
+                    <span className="text-xs text-muted-foreground">/ 100</span>
+                  </div>
+                </div>
+                <div className="bg-accent rounded-md p-3">
+                  <p className="text-xs font-semibold text-foreground mb-1">{t('workplace.drillSuggestion')}</p>
+                  <p className="text-sm text-muted-foreground">{drillFeedback.suggestion}</p>
+                </div>
+                <Button size="sm" variant="outline" className="w-full" onClick={() => { setDrillText(""); setDrillFeedback(null); }}>
+                  {t('workplace.drillTryAgain')}
+                </Button>
+              </div>
+            ) : (
+              <Button size="sm" className="mt-2 w-full" onClick={() => handleDrillSubmit()}>
+                {t('workplace.getFeedback')}
+              </Button>
+            )}
           </Panel>
 
           <Panel title={t('workplace.toneGuide')}>

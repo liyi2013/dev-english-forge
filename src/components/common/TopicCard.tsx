@@ -29,9 +29,9 @@ export function TopicCard({
   return (
     <Link
       to={`/technical-english/${slug}`}
-      className={cn("panel p-4 hover:border-primary/40 hover:shadow-sm transition group min-w-0 overflow-hidden", className)}
+      className={cn("panel p-4 hover:border-primary/40 hover:shadow-sm transition group block w-full min-w-0 overflow-hidden", className)}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-semibold break-words">{title}</h4>
           {titleZh && (
@@ -49,7 +49,7 @@ export function TopicCard({
         </div>
         <span className="chip shrink-0">{level}</span>
       </div>
-      {modeChips && <div className="mt-3 flex flex-wrap items-center gap-1">{modeChips}</div>}
+      {modeChips && <div className="mt-3 flex min-w-0 flex-wrap items-center gap-1">{modeChips}</div>}
       <div className="mt-3 flex items-center gap-2 min-w-0">
         <Progress value={progress} />
         <span className="text-[11px] font-mono text-muted-foreground shrink-0">{progress}%</span>

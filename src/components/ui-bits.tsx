@@ -11,8 +11,8 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row items-start justify-between mb-6 gap-4">
-      <div>
+    <div className="flex flex-col sm:flex-row items-start justify-between mb-6 gap-4 min-w-0">
+      <div className="min-w-0">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground break-words">{title}</h1>
         {subtitle && <p className="text-sm text-muted-foreground mt-1 max-w-2xl break-words">{subtitle}</p>}
       </div>
@@ -40,14 +40,14 @@ export function Panel({
     <section className={cn("panel min-w-0", className)}>
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between px-5 py-3 border-b border-border gap-2">
-          <div>
+          <div className="min-w-0">
             {title && <h3 className="text-sm font-semibold text-foreground break-words">{title}</h3>}
             {description && <p className="text-xs text-muted-foreground mt-0.5 break-words">{description}</p>}
           </div>
           {action}
         </header>
       )}
-      <div className={cn(padded && "p-5")}>{children}</div>
+      <div className={cn("min-w-0", padded && "p-5")}>{children}</div>
     </section>
   );
 }

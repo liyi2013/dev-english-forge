@@ -84,9 +84,53 @@ export const mockInterviewSessions: InterviewSession[] = [
   },
 ];
 
+function extractKeywords(text: string): string[] {
+  const common = ["javascript", "python", "java", "go", "rust", "react", "vue",
+    "angular", "aws", "gcp", "azure", "docker", "kubernetes", "k8s", "redis",
+    "kafka", "postgresql", "mysql", "mongodb", "graphql", "rest", "microservice",
+    "terraform", "backend", "frontend", "full-stack", "devops", "sre", "data",
+    "machine learning", "api", "distributed", "system design", "database", "testing",
+    "ci/cd", "serverless", "event-driven", "caching", "message queue"];
+  const lower = text.toLowerCase();
+  return common.filter(k => lower.includes(k));
+}
+
 export function getQuestionsByMode(mode: string): InterviewQuestionItem[] {
   if (mode === 'jd') return jdQuestions;
   return quickQuestions;
+}
+
+export function getQuestionsByConfig(config: {
+  mode: string;
+  role: string;
+  jdText?: string;
+  resumeText?: string;
+}): InterviewQuestionItem[] {
+  const { mode, role, jdText, resumeText } = config;
+
+  if (mode === 'jd' && jdText?.trim()) {
+    const keywords = extractKeywords(jdText);
+    const questions: InterviewQuestionItem[] = [];
+    questions.push({ type: 'Technical', question: `Walk me through your experience as a ${role || 'software engineer'}.`, hint: `Your background and key achievements. JD keywords: ${keywords.slice(0, 3).join(', ') || 'general'}.` });
+    questions.push({ type: 'System Design', question: 'Design a scalable system for the kind of application described in the JD.', hint: `Focus on the tech stack mentioned: ${keywords.slice(0, 4).join(', ') || 'common patterns'}.` });
+    questions.push({ type: 'Technical', question: 'How would you ensure reliability and observability in this system?', hint: 'Think about monitoring, alerting, distributed tracing, and SLAs.' });
+    questions.push({ type: 'Technical', question: `How do you optimize database performance in a ${role || 'production'} environment?`, hint: 'Consider indexing, query optimization, caching strategies.' });
+    questions.push({ type: 'Behavioral', question: 'Tell me about a challenging project that matches this JD. What was your role?', hint: 'Use STAR format. Connect your experience to the job requirements.' });
+    return questions;
+  }
+
+  if (mode === 'full' && (jdText?.trim() || resumeText?.trim())) {
+    const jdKeywords = extractKeywords(jdText || '');
+    const resumeKeywords = extractKeywords(resumeText || '');
+    const questions: InterviewQuestionItem[] = [];
+    questions.push({ type: 'Technical', question: 'Based on your background, walk me through a project that aligns with this role.', hint: `Your resume mentions: ${resumeKeywords.slice(0, 3).join(', ') || 'general experience'}. Connect it to the JD requirements.` });
+    questions.push({ type: 'System Design', question: 'How would you apply your past experience to design a solution for the challenges in this role?', hint: `JD focuses on: ${jdKeywords.slice(0, 4).join(', ') || 'general engineering'}. Draw from your experience.` });
+    questions.push({ type: 'Behavioral', question: 'What skills from your resume make you the best fit for this position?', hint: 'Be specific. Connect your strongest skills to the JD requirements.' });
+    questions.push({ type: 'Technical', question: 'Describe a technical challenge you solved that relates to the responsibilities in the JD.', hint: 'Use the problem-solution-impact framework. Be detailed about the approach.' });
+    questions.push({ type: 'Behavioral', question: 'Where do you see room for growth based on the JD requirements?', hint: 'Honest self-assessment + concrete plan shows self-awareness.' });
+    return questions;
+  }
+  return getQuestionsByMode(mode);
 }
 
 export function getRecentSessions() {

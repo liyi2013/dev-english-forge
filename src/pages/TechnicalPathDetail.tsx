@@ -45,8 +45,8 @@ export default function TechnicalPathDetail() {
 
       <PageHeader title={path.name} subtitle={path.description} />
 
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(260px,360px)]">
+        <div className="min-w-0 space-y-6">
           {/* Path overview */}
           <Panel title={path.nameZh} description={t('tech.learnToExplain')}>
             <div className="space-y-4">
@@ -91,7 +91,7 @@ export default function TechnicalPathDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="min-w-0 space-y-4">
           <Panel title={t('tech.skills')}>
             <div className="space-y-3">
               <div>
