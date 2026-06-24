@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { PageHeader, Panel, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { setInterviewConfig } from "@/lib/mockStorage";
-import { Zap, FileText, ClipboardList, ChevronDown, Play } from "lucide-react";
+import { Zap, FileText, ClipboardList, Play } from "lucide-react";
 import { useState } from "react";
 
 const modes = [
@@ -17,20 +17,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <div className="mt-1.5">{children}</div>
     </label>
-  );
-}
-
-function Select({ value, options }: { value: string; options: string[] }) {
-  return (
-    <div className="relative">
-      <select
-        defaultValue={value}
-        className="appearance-none w-full h-9 px-3 pr-8 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40"
-      >
-        {options.map((o) => <option key={o}>{o}</option>)}
-      </select>
-      <ChevronDown className="w-4 h-4 absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-    </div>
   );
 }
 

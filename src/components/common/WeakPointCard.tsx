@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { TrendingDown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n";
 import type { WeakPoint } from "@/types/review";
 
 export function WeakPointCard({
@@ -10,6 +11,7 @@ export function WeakPointCard({
   weakPoint: WeakPoint;
   className?: string;
 }) {
+  const { t } = useI18n();
   const isHigh = weakPoint.severity === "high";
   return (
     <div
@@ -28,7 +30,7 @@ export function WeakPointCard({
             isHigh ? "text-warning" : "text-muted-foreground"
           }`}
         >
-          {isHigh ? "High priority" : "Recurring"}
+          {isHigh ? t('review.highPriority') : t('review.recurring')}
         </span>
       </div>
       <h4 className="mt-2 text-sm font-semibold leading-snug">{weakPoint.theme}</h4>
@@ -38,7 +40,7 @@ export function WeakPointCard({
         to={weakPoint.drillRoute}
         className="mt-3 text-xs font-medium text-primary inline-flex items-center gap-1 hover:underline"
       >
-        Open drill <ArrowRight className="w-3 h-3" />
+        {t('review.openDrill')} <ArrowRight className="w-3 h-3" />
       </Link>
     </div>
   );

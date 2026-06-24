@@ -83,23 +83,20 @@ describe("Button clickability — full audit", () => {
       });
     });
 
-    it("Large mic button during recording is clickable and stops recording", async () => {
+    it("Large mic button during recording is clickable and shows evaluation", async () => {
       renderWP(<SpeakTab topic={mockTopic} />);
-      // Start recording
       const recordBtn = screen.getByText("录制回答");
       expect(recordBtn).toBeDefined();
       fireEvent.click(recordBtn);
       await waitFor(() => expect(screen.getByText("00:00")).toBeDefined());
-      // Find all buttons - the large mic button is a native button with no visible text
-      // We use the aria-label added to the mic button
-      const micBtn = screen.queryByLabelText("停止回答");
-      if (micBtn) {
-        fireEvent.click(micBtn);
-        await waitFor(() => {
-          // After stopping, evaluation should appear
-          expect(screen.getByText(/fluency|Fluency|流利度|流畅/)).toBeDefined();
-        });
-      }
+      // Assert the mic button exists and click it
+      const micBtn = screen.getByLabelText("停止回答");
+      fireEvent.click(micBtn);
+      // After stopping, evaluation should appear
+      await waitFor(() => {
+        expect(screen.getByText("模拟评估")).toBeDefined();
+        expect(screen.getByText("流利度")).toBeDefined();
+      });
     });
   });
 
@@ -129,21 +126,18 @@ describe("Button clickability — full audit", () => {
   // =========== Review ===========
   describe("Review", () => {
     it("Speak again link points to /ai-interview lobby", async () => {
-      // Seed mock review data to ensure Speak Again buttons render
       localStorage.setItem("devenglish_reviewed_mock_item_ids", JSON.stringify([]));
       localStorage.setItem("devenglish_review_queue", JSON.stringify([]));
-      renderWP(<Review />);
+      const { container } = renderWP(<Review />);
+      // Debug: print all link texts
       const links = screen.getAllByRole("link");
-      const speakAgainLinks = links.filter(l => {
-        const text = l.textContent || "";
-        return text.includes("再练口语") || text.includes("Speak again") || text.includes("再练");
+      // Check for "再说一遍" in DOM
+      const speakAgainTexts = links.filter(l => (l.textContent || "").includes("再说一遍"));
+      expect(speakAgainTexts.length).toBeGreaterThanOrEqual(1);
+      speakAgainTexts.forEach(link => {
+        const href = link.getAttribute("href");
+        expect(href).toBe("/ai-interview");
       });
-      if (speakAgainLinks.length > 0) {
-        speakAgainLinks.forEach(link => {
-          const href = link.getAttribute("href");
-          expect(href).toBe("/ai-interview");
-        });
-      }
     });
   });
 
