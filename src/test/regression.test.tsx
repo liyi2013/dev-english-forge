@@ -575,3 +575,52 @@ describe("AIInterviewLobby JD / Full mode inputs", () => {
     expect(screen.queryByPlaceholderText(/粘贴你的简历摘要/)).toBeNull();
   });
 });
+
+// =========== 6. Fixed i18n keys regression ===========
+describe("Fixed i18n keys regression", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("SearchResults no-results page shows Chinese, not raw keys", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/search?q=__not_existing_keyword__"]}>
+          <SearchResults />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      // Should show Chinese no-results messages
+      expect(screen.getByText("没有找到结果")).toBeDefined();
+      expect(screen.getByText("试试这些搜索词")).toBeDefined();
+    });
+
+    // Should NOT show raw i18n keys
+    expect(screen.queryByText("search.noResults")).toBeNull();
+    expect(screen.queryByText("search.noResultsDesc")).toBeNull();
+    expect(screen.queryByText("search.tryThese")).toBeNull();
+  });
+
+  it("SearchResults topic section does not show raw topicsLabel key", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/search?q=Redis"]}>
+          <SearchResults />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      const buttons = screen.getAllByRole("button");
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // No raw key should appear
+    expect(screen.queryByText("search.topicsLabel")).toBeNull();
+  });
+});

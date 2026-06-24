@@ -18,6 +18,16 @@ const popularSearches = [
   "Redis", "cache", "API", "Docker", "database", "CI/CD", "STAR", "idempotent",
 ];
 
+type SearchableReport = Partial<InterviewReport> & {
+  title?: string;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object'
+    ? value as Record<string, unknown>
+    : null;
+}
+
 function includesQuery(value: unknown, query: string): boolean {
   if (typeof value === 'string') {
     return value.toLowerCase().includes(query);
@@ -93,14 +103,16 @@ export default function SearchResults() {
     const generated = getGeneratedReports();
 
     // Build full report map from all available sources
-    const fullReportMap = new Map<string, Partial<InterviewReport>>();
+    const fullReportMap = new Map<string, SearchableReport>();
     mockReports.forEach((r) => fullReportMap.set(r.id, r));
 
     // Add generated reports that are structurally complete
     if (Array.isArray(generated)) {
-      generated.forEach((r: Record<string, unknown>) => {
-        if (r && typeof r === 'object' && r.id) {
-          fullReportMap.set(r.id as string, r as unknown as Partial<InterviewReport>);
+      generated.forEach((r) => {
+        const record = asRecord(r);
+        const id = record?.id;
+        if (typeof id === 'string') {
+          fullReportMap.set(id, record as SearchableReport);
         }
       });
     }
@@ -124,23 +136,23 @@ export default function SearchResults() {
       // Search question details
       if (Array.isArray(full.questionDetails)) {
         for (const qd of full.questionDetails) {
-          if (qd && typeof qd === 'object') {
-            if (includesQuery((qd as Record<string, unknown>).question, query)) return true;
-            if (includesQuery((qd as Record<string, unknown>).userAnswer, query)) return true;
-            if (includesQuery((qd as Record<string, unknown>).gapAnalysis, query)) return true;
-            if (includesQuery((qd as Record<string, unknown>).missingKeyPoints, query)) return true;
-            if (includesQuery((qd as Record<string, unknown>).betterAnswerVersion, query)) return true;
-            if (includesQuery((qd as Record<string, unknown>).idealAnswer, query)) return true;
-          }
+          const qdRecord = asRecord(qd);
+          if (!qdRecord) continue;
+          if (includesQuery(qdRecord.question, query)) return true;
+          if (includesQuery(qdRecord.userAnswer, query)) return true;
+          if (includesQuery(qdRecord.gapAnalysis, query)) return true;
+          if (includesQuery(qdRecord.missingKeyPoints, query)) return true;
+          if (includesQuery(qdRecord.betterAnswerVersion, query)) return true;
+          if (includesQuery(qdRecord.idealAnswer, query)) return true;
         }
       }
       // Search recommended learning
       if (Array.isArray(full.recommendedLearning)) {
         for (const rl of full.recommendedLearning) {
-          if (rl && typeof rl === 'object') {
-            if (includesQuery((rl as Record<string, unknown>).title, query)) return true;
-            if (includesQuery((rl as Record<string, unknown>).desc, query)) return true;
-          }
+          const rlRecord = asRecord(rl);
+          if (!rlRecord) continue;
+          if (includesQuery(rlRecord.title, query)) return true;
+          if (includesQuery(rlRecord.desc, query)) return true;
         }
       }
       return false;

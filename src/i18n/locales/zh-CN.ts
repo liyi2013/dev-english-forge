@@ -183,6 +183,7 @@ const zhCN: Record<string, string> = {
 
   'report.title': '面试报告',
   'report.overallScore': '综合评分',
+  'report.scoreBreakdown': '评分明细',
   'report.strongPoints': '优点',
   'report.weakPoints': '不足',
   'report.answerDeepDive': '答案深度分析',
@@ -386,6 +387,10 @@ const zhCN: Record<string, string> = {
   'search.matchingTerms': '个匹配词汇',
   'search.matchingQuestions': '个匹配问题',
   'search.matchingReports': '个匹配报告',
+  'search.noResults': '没有找到结果',
+  'search.noResultsDesc': '没有找到匹配内容：',
+  'search.tryThese': '试试这些搜索词',
+  'search.topicsLabel': '主题',
   'search.matchingSentences': '个匹配句型',
   'search.lessons': '课程',
   'search.termsLabel': '词汇',

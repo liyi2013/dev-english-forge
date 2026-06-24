@@ -183,6 +183,7 @@ const enUS: Record<string, string> = {
 
   'report.title': 'Interview Report',
   'report.overallScore': 'Overall Score',
+  'report.scoreBreakdown': 'Score Breakdown',
   'report.strongPoints': 'Strong Points',
   'report.weakPoints': 'Weak Points',
   'report.answerDeepDive': 'Answer Deep Dive',
@@ -386,6 +387,10 @@ const enUS: Record<string, string> = {
   'search.matchingTerms': 'matching terms',
   'search.matchingQuestions': 'matching questions',
   'search.matchingReports': 'matching reports',
+  'search.noResults': 'No results found',
+  'search.noResultsDesc': 'No matching content found for:',
+  'search.tryThese': 'Try these searches',
+  'search.topicsLabel': 'Topics',
   'search.matchingSentences': 'matching sentences',
   'search.lessons': 'Lessons',
   'search.termsLabel': 'Terms',
