@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader, Panel, Progress, Button } from "@/components/ui-bits";
 import { ScoreBreakdown } from "@/components/common/ScoreBreakdown";
 import { AnswerGapPanel } from "@/components/common/AnswerGapPanel";
 import { RecommendedLearningCard } from "@/components/common/RecommendedLearningCard";
 import { useI18n } from "@/i18n";
-import { addToReviewQueue, addReport } from "@/lib/mockStorage";
+import { addToReviewQueue, addReport, getCompletedReports, getReviewQueue } from "@/lib/mockStorage";
 import { getLatestReport } from "@/data/mockReports";
 import { toast } from "sonner";
 import {
@@ -15,8 +16,29 @@ import {
 export default function InterviewReport() {
   const { t } = useI18n();
   const report = getLatestReport();
+  const [added, setAdded] = useState(false);
 
   const handleAddToReview = () => {
+    if (added) {
+      toast.info(t('report.alreadyAddedToReview'));
+      return;
+    }
+
+    // Check if already exists
+    const existingReports = getCompletedReports();
+    const existingQueue = getReviewQueue();
+    const reportExists = existingReports.some((r) => r.id === report.id);
+    const weakPointsExist = report.weakPoints.every((wp) =>
+      existingQueue.some((q) => q.title === wp)
+    );
+
+    if (reportExists && weakPointsExist) {
+      setAdded(true);
+      toast.info(t('report.alreadyAddedToReview'));
+      return;
+    }
+
+    // Add weak points to review queue
     report.weakPoints.forEach((wp) => {
       addToReviewQueue({
         id: `review-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -27,12 +49,16 @@ export default function InterviewReport() {
         createdAt: new Date().toISOString(),
       });
     });
+
+    // Add report
     addReport({
       id: report.id,
       date: report.date,
       overallScore: report.overallScore,
     });
-    toast.success('Added to review queue');
+
+    setAdded(true);
+    toast.success(t('report.addedToReviewQueue'));
   };
 
   const scoreItems = [
@@ -120,7 +146,6 @@ export default function InterviewReport() {
               description={`"${report.questionDetails[0].question}"`}
             >
               <div className="space-y-4">
-                {/* Your Answer */}
                 <div className="panel p-4 bg-background border-dashed">
                   <div className="flex items-center gap-2 mb-2">
                     <User className="w-3.5 h-3.5 text-muted-foreground" />
@@ -129,7 +154,6 @@ export default function InterviewReport() {
                   <p className="text-sm text-muted-foreground italic">{report.questionDetails[0].userAnswer}</p>
                 </div>
 
-                {/* Ideal Answer */}
                 <div className="panel p-4 bg-accent/30 border-primary/20">
                   <div className="flex items-center gap-2 mb-2">
                     <Bot className="w-3.5 h-3.5 text-primary" />
@@ -138,13 +162,11 @@ export default function InterviewReport() {
                   <p className="text-sm text-foreground leading-relaxed">{report.questionDetails[0].idealAnswer}</p>
                 </div>
 
-                {/* Gap Analysis + Missing Points */}
                 <AnswerGapPanel
                   gapAnalysis={report.questionDetails[0].gapAnalysis}
                   missingKeyPoints={report.questionDetails[0].missingKeyPoints}
                 />
 
-                {/* Better Answer Version */}
                 <div className="panel p-4 bg-accent border-primary/20">
                   <div className="flex items-center gap-2 mb-2">
                     <Wand2 className="w-3.5 h-3.5 text-primary" />
@@ -161,7 +183,6 @@ export default function InterviewReport() {
             </Panel>
           )}
 
-          {/* Recommended Learning */}
           <Panel title={t('report.recommendedLearning')} description={t('report.recommendedDesc')}>
             <div className="mb-3 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-primary bg-accent border border-primary/15 px-2 py-1 rounded">
               {t('report.recommendedDesc')}
@@ -173,14 +194,14 @@ export default function InterviewReport() {
             </div>
           </Panel>
 
-          {/* Close the loop */}
           <div className="panel p-5 bg-accent border-primary/20 flex items-center justify-between">
             <div>
               <h4 className="text-sm font-semibold">{t('report.closeLoop')}</h4>
               <p className="text-xs text-muted-foreground mt-1">{t('report.closeLoopDesc')}</p>
             </div>
-            <Button onClick={handleAddToReview}>
-              {t('report.addToReview')} <ArrowRight className="w-3.5 h-3.5" />
+            <Button onClick={handleAddToReview} disabled={added}>
+              {added ? t('report.alreadyAddedToReview') : t('report.addToReview')}
+              <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>

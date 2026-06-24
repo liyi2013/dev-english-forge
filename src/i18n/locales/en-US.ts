@@ -284,6 +284,8 @@ const enUS: Record<string, string> = {
   'topic.topicAlreadySaved': 'Already saved',
   'search.removedFromVocab': 'Removed from vocabulary',
   'review.reviewItemUpdated': 'Marked as reviewed',
+  'report.addedToReviewQueue': 'Added to review queue',
+  'report.alreadyAddedToReview': 'Already in review queue',
   'unit.of': ' of ',
 };
 export default enUS;

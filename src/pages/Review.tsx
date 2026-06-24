@@ -108,13 +108,21 @@ export default function Review() {
   };
 
   const handleReviewDone = (id: string) => {
-    setDisplayItems((prev) =>
-      prev.map((item) =>
+    // Find and update the item
+    let itemType: 'mock' | 'queue' | undefined;
+    setDisplayItems((prev) => {
+      const found = prev.find((i) => i._id === id);
+      itemType = found?._type;
+      return prev.map((item) =>
         item._id === id ? { ...item, _status: 'reviewed' as const } : item
-      )
-    );
-    updateReviewItemStatus(id, 'reviewed');
-    markMockItemReviewed(id);
+      );
+    });
+    // Persist to correct storage
+    if (itemType === 'queue') {
+      updateReviewItemStatus(id, 'reviewed');
+    } else if (itemType === 'mock') {
+      markMockItemReviewed(id);
+    }
     toast.success(t('review.reviewItemUpdated'));
   };
 

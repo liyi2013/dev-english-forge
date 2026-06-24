@@ -18,7 +18,7 @@ const popularSearches = [
 ];
 
 export default function SearchResults() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const [filter, setFilter] = useState<FilterGroup>('All');
@@ -72,7 +72,7 @@ export default function SearchResults() {
       r.title.toLowerCase().includes(q.toLowerCase()) ||
       String(r.overallScore).includes(q)
     );
-  }, [q]);
+  }, [q, locale]);
 
   const sentenceItems = useMemo(() => {
     if (!q) return [];

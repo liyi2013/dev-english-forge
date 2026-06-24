@@ -284,6 +284,8 @@ const zhCN: Record<string, string> = {
   'topic.topicAlreadySaved': '主题已收藏',
   'search.removedFromVocab': '已从词汇本移除',
   'review.reviewItemUpdated': '已标记为已复习',
+  'report.addedToReviewQueue': '已加入复习队列',
+  'report.alreadyAddedToReview': '已在复习队列中',
   'unit.of': ' / ',
 };
 export default zhCN;
