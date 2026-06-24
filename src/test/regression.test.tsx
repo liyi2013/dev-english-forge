@@ -446,3 +446,132 @@ describe("AIInterviewLobby i18n regression", () => {
     expect(screen.queryByText("30 minutes")).toBeNull();
   });
 });
+
+// =========== 5. AIInterviewLobby JD / Full mode input areas ===========
+describe("AIInterviewLobby JD / Full mode inputs", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("JD mode shows JD input area", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Click JD mode
+    fireEvent.click(screen.getByText("JD 模拟面试"));
+
+    // JD input area should appear
+    expect(screen.getByText("职位描述 / JD")).toBeDefined();
+    expect(screen.getByText(/粘贴目标岗位 JD/)).toBeDefined();
+
+    // Type JD text
+    const textarea = screen.getByPlaceholderText(/粘贴岗位描述/);
+    fireEvent.change(textarea, { target: { value: "We need a senior backend engineer with 5+ years of Node.js experience." } });
+
+    // Start interview
+    fireEvent.click(screen.getByText("开始面试"));
+
+    // Check localStorage
+    const config = JSON.parse(memLS.getItem("devenglish_interview_config") || "{}");
+    expect(config.mode).toBe("jd");
+    expect(config.jdText).toBe("We need a senior backend engineer with 5+ years of Node.js experience.");
+  });
+
+  it("Full mode shows resume + JD input area", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Click Full mode
+    fireEvent.click(screen.getByText("完整模拟面试"));
+
+    // Full input area should appear
+    expect(screen.getByText("完整模拟材料")).toBeDefined();
+    expect(screen.getByText("简历内容")).toBeDefined();
+    expect(screen.getAllByText("职位描述 / JD").length).toBeGreaterThanOrEqual(1);
+
+    // Type resume and JD
+    const resumeTextarea = screen.getByPlaceholderText(/粘贴你的简历摘要/);
+    fireEvent.change(resumeTextarea, { target: { value: "5 years backend, Node.js, PostgreSQL, AWS" } });
+
+    const jdTextarea = screen.getByPlaceholderText(/粘贴岗位描述/);
+    fireEvent.change(jdTextarea, { target: { value: "Senior Engineer - distributed systems" } });
+
+    // Start interview
+    fireEvent.click(screen.getByText("开始面试"));
+
+    const config = JSON.parse(memLS.getItem("devenglish_interview_config") || "{}");
+    expect(config.mode).toBe("full");
+    expect(config.resumeText).toBe("5 years backend, Node.js, PostgreSQL, AWS");
+    expect(config.jdText).toBe("Senior Engineer - distributed systems");
+  });
+
+  it("empty JD shows toast.info hint", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Click JD mode without entering JD
+    fireEvent.click(screen.getByText("JD 模拟面试"));
+
+    // Start interview with empty JD
+    fireEvent.click(screen.getByText("开始面试"));
+
+    expect(vi.mocked(toast.info)).toHaveBeenCalledWith("未填写 JD，将使用通用岗位问题。");
+  });
+
+  it("switching modes preserves input content", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Click JD mode and type JD
+    fireEvent.click(screen.getByText("JD 模拟面试"));
+    const textarea = screen.getByPlaceholderText(/粘贴岗位描述/);
+    fireEvent.change(textarea, { target: { value: "My test JD" } });
+
+    // Switch to quick mode
+    fireEvent.click(screen.getByText("快速练习"));
+
+    // Switch back to JD mode
+    fireEvent.click(screen.getByText("JD 模拟面试"));
+
+    // JD content should still be there
+    const textarea2 = screen.getByPlaceholderText(/粘贴岗位描述/) as HTMLTextAreaElement;
+    expect(textarea2.value).toBe("My test JD");
+  });
+
+  it("quick mode does not show JD / resume textareas", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <AIInterviewLobby />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    // Default is quick mode - should not have JD textarea
+    expect(screen.queryByPlaceholderText(/粘贴岗位描述/)).toBeNull();
+    expect(screen.queryByPlaceholderText(/粘贴你的简历摘要/)).toBeNull();
+  });
+});

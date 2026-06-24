@@ -3,6 +3,7 @@ import { PageHeader, Panel, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { setInterviewConfig } from "@/lib/mockStorage";
 import { Zap, FileText, ClipboardList, Play } from "lucide-react";
+import { toast } from "sonner";
 import { useState } from "react";
 
 const modes = [
@@ -71,8 +72,16 @@ export default function AIInterviewLobby() {
   const [questionCount, setQuestionCount] = useState("10");
   const [interviewType, setInterviewType] = useState("Mixed");
   const [duration, setDuration] = useState("30 minutes");
+  const [jdText, setJdText] = useState("");
+  const [resumeText, setResumeText] = useState("");
 
   const handleStart = () => {
+    if (selected === "jd" && !jdText.trim()) {
+      toast.info(t("ai.jdMissingHint"));
+    }
+    if (selected === "full" && !resumeText.trim() && !jdText.trim()) {
+      toast.info(t("ai.fullMissingHint"));
+    }
     setInterviewConfig({
       mode: selected,
       role,
@@ -81,6 +90,8 @@ export default function AIInterviewLobby() {
       questionCount: parseInt(questionCount),
       interviewType,
       duration,
+      ...(selected === "jd" || selected === "full" ? { jdText: jdText.trim() || undefined } : {}),
+      ...(selected === "full" ? { resumeText: resumeText.trim() || undefined } : {}),
     });
   };
 
@@ -171,6 +182,60 @@ export default function AIInterviewLobby() {
                 </select>
               </Field>
             </div>
+
+            {/* JD mode input */}
+            {selected === "jd" && (
+              <div className="mt-5 pt-5 border-t border-border">
+                <h4 className="text-sm font-semibold mb-1">{t("ai.jdInputTitle")}</h4>
+                <p className="text-xs text-muted-foreground mb-3">{t("ai.jdInputDesc")}</p>
+                <textarea
+                  value={jdText}
+                  onChange={(e) => setJdText(e.target.value)}
+                  placeholder={t("ai.jdPlaceholder")}
+                  rows={6}
+                  className="w-full px-3 py-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40 resize-y"
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {t("ai.charCountPrefix")}{jdText.length}{t("ai.charCountSuffix")}
+                </p>
+              </div>
+            )}
+
+            {/* Full mode input */}
+            {selected === "full" && (
+              <div className="mt-5 pt-5 border-t border-border space-y-4">
+                <div>
+                  <h4 className="text-sm font-semibold mb-1">{t("ai.fullInputTitle")}</h4>
+                  <p className="text-xs text-muted-foreground mb-3">{t("ai.fullInputDesc")}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">{t("ai.resumeLabel")}</label>
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    placeholder={t("ai.resumePlaceholder")}
+                    rows={6}
+                    className="mt-1.5 w-full px-3 py-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40 resize-y"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("ai.resumeCharCountPrefix")}{resumeText.length}{t("ai.resumeCharCountSuffix")}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">{t("ai.jdLabel")}</label>
+                  <textarea
+                    value={jdText}
+                    onChange={(e) => setJdText(e.target.value)}
+                    placeholder={t("ai.jdPlaceholder")}
+                    rows={6}
+                    className="mt-1.5 w-full px-3 py-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-ring/40 resize-y"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("ai.jdCharCountPrefix")}{jdText.length}{t("ai.jdCharCountSuffix")}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="mt-5 pt-5 border-t border-border flex items-center justify-between">
               <p className="text-xs text-muted-foreground">

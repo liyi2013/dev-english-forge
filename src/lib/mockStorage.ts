@@ -122,6 +122,8 @@ export interface StoredInterviewConfig {
   questionCount: number;
   interviewType: string;
   duration: string;
+  jdText?: string;
+  resumeText?: string;
 }
 export function getInterviewConfig(): StoredInterviewConfig | null {
   return get<StoredInterviewConfig | null>('interview_config', null);

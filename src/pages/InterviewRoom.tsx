@@ -5,7 +5,7 @@ import { useI18n } from "@/i18n";
 import { getQuestionsByMode } from "@/data/mockInterviewSessions";
 import { generateMockReport } from "@/data/mockReports";
 import { getInterviewConfig, clearInterviewProgress, saveGeneratedReport, addReport } from "@/lib/mockStorage";
-import { Mic, Square, ChevronLeft, ChevronRight, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { Mic, Square, ChevronLeft, ChevronRight, X, CheckCircle2, AlertCircle, FileText } from "lucide-react";
 
 export default function InterviewRoom() {
   const { t } = useI18n();
