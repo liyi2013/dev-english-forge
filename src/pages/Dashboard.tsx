@@ -91,26 +91,37 @@ export default function Dashboard() {
           {/* Today's plan */}
           <Panel title={t('dash.todayPlan')} description={`${data.todayPlan.items.length}${t("dash.smallTasks")}`}>
             <ul className="divide-y divide-border -my-2">
-              {data.todayPlan.items.map((it) => (
+              {data.todayPlan.items.map((it) => {
+                const isDone = it.done || doneItems.has(it.label);
+                return (
                 <li key={it.label} className="flex items-center justify-between py-3 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className={`w-4 h-4 shrink-0 rounded border flex items-center justify-center ${it.done ? "bg-success border-success text-white" : "border-border bg-card"}`}>
-                      {(it.done || doneItems.has(it.label)) && <Check className="w-3 h-3" strokeWidth={3} />}
+                    <span className={`w-4 h-4 shrink-0 rounded border flex items-center justify-center ${isDone ? "bg-success border-success text-white" : "border-border bg-card"}`}>
+                      {isDone && <Check className="w-3 h-3" strokeWidth={3} />}
                     </span>
-                    <span className={`text-sm truncate ${(it.done || doneItems.has(it.label)) ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                    <span className={`text-sm truncate ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
                       {pickText(locale, it.label, it.labelZh)}
                     </span>
                   </div>
-                  <button className="text-xs text-primary hover:underline shrink-0" onClick={() => { setDoneItems(prev => new Set(prev).add(it.label)); toast.success(t("common.completed")); }}>
-                    {t("common.done")}
+                  <button
+                    className={`text-xs shrink-0 ${isDone ? "text-muted-foreground cursor-default" : "text-primary hover:underline"}`}
+                    disabled={isDone}
+                    onClick={() => {
+                      if (isDone) return;
+                      setDoneItems(prev => new Set(prev).add(it.label));
+                      toast.success(t("common.completed"));
+                    }}
+                  >
+                    {isDone ? t("common.done") : t("common.start")}
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </Panel>
 
           {/* Weak skills */}
-          <Panel title={t('dash.weakSkills')} description={t("dash.clickToSee")}>
+          <Panel title={t('dash.weakSkills')} description={t("dash.focusAreas")}>
             <ul className="space-y-3">
               {data.weakSkills.map((s) => (
                 <li key={s.tag} className="flex items-center justify-between gap-3">

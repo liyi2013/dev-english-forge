@@ -635,3 +635,103 @@ describe("LearningPathDetail routes", () => {
     expect(openLinks.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+// =========== 9. SearchResults filter i18n ===========
+describe("SearchResults filter i18n", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("renders Chinese filter labels without raw i18n keys", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter initialEntries={["/search?q=cache"]}>
+          <SearchResults />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+
+    await waitFor(() => {
+      const buttons = screen.getAllByRole("button");
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    // No raw i18n keys should appear
+    expect(screen.queryByText("search.filterAll")).toBeNull();
+    expect(screen.queryByText("search.filterTopics")).toBeNull();
+    expect(screen.queryByText("search.filterVocabulary")).toBeNull();
+    expect(screen.queryByText("search.filterQuestions")).toBeNull();
+    expect(screen.queryByText("search.filterReports")).toBeNull();
+    expect(screen.queryByText("search.filterSentences")).toBeNull();
+  });
+});
+
+// =========== 10. Dashboard weak skills description ===========
+describe("Dashboard weak skills description", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("does not show raw dash.clickToSee key", async () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText("用英语解释 Redis 缓存问题")).toBeDefined();
+    });
+    expect(screen.queryByText("dash.clickToSee")).toBeNull();
+  });
+});
+
+// =========== 11. Dashboard today plan button ===========
+describe("Dashboard today plan button", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    memLS = createMemoryLS();
+    vi.stubGlobal("localStorage", memLS);
+  });
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  it("shows start on undone task, done on completed task", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+    // "复习 10 个技术词汇" is done, should show "完成"
+    const doneBtns = screen.getAllByText("完成");
+    expect(doneBtns.length).toBeGreaterThanOrEqual(1);
+
+    // "练习 1 个面试回答" is not done, should show "开始"
+    const startBtns = screen.getAllByText("开始");
+    // There should be at least 2 "开始" buttons (today plan + recommended)
+    expect(startBtns.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("disabled done button does not retrigger toast", () => {
+    render(
+      <I18nProvider>
+        <MemoryRouter>
+          <Dashboard />
+        </MemoryRouter>
+      </I18nProvider>
+    );
+    const doneBtns = screen.getAllByText("完成");
+    if (doneBtns.length > 0) {
+      const btn = doneBtns[0];
+      expect((btn as HTMLButtonElement).disabled).toBe(true);
+    }
+  });
+});
