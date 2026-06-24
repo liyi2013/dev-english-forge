@@ -227,6 +227,8 @@ const enUS: Record<string, string> = {
   'review.reports': 'reports',
   'review.reviewed': 'Reviewed',
   'review.saved': 'Saved',
+  'review.mockInterview': 'Mock Interview',
+  'search.mockInterview': 'Mock Interview',
   'review.score': 'Score',
 
   'profile.title': 'Profile',

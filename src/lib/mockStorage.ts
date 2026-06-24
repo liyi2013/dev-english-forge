@@ -154,3 +154,51 @@ export function addReport(report: StoredReport): void {
   reports.unshift(report);
   set('reports', reports);
 }
+
+// --- Reviewed Mock Item IDs ---
+const REVIEWED_MOCK_IDS_KEY = PREFIX + 'reviewed_mock_item_ids';
+
+export function getReviewedMockIds(): string[] {
+  try {
+    const raw = localStorage.getItem(REVIEWED_MOCK_IDS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markMockItemReviewed(id: string): void {
+  const ids = getReviewedMockIds();
+  if (!ids.includes(id)) {
+    ids.push(id);
+    localStorage.setItem(REVIEWED_MOCK_IDS_KEY, JSON.stringify(ids));
+  }
+}
+
+export function isMockItemReviewed(id: string): boolean {
+  return getReviewedMockIds().includes(id);
+}
+
+// --- Saved Topics ---
+const SAVED_TOPICS_KEY = PREFIX + 'saved_topics';
+
+export function getSavedTopics(): string[] {
+  try {
+    const raw = localStorage.getItem(SAVED_TOPICS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function isTopicSaved(slug: string): boolean {
+  return getSavedTopics().includes(slug);
+}
+
+export function saveTopic(slug: string): void {
+  const topics = getSavedTopics();
+  if (!topics.includes(slug)) {
+    topics.push(slug);
+    localStorage.setItem(SAVED_TOPICS_KEY, JSON.stringify(topics));
+  }
+}

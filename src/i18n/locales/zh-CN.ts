@@ -227,6 +227,8 @@ const zhCN: Record<string, string> = {
   'review.reports': '个报告',
   'review.reviewed': '已复习',
   'review.saved': '已收藏',
+  'review.mockInterview': '模拟面试',
+  'search.mockInterview': '模拟面试',
   'review.score': '分数',
 
   'profile.title': '个人中心',

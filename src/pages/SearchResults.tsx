@@ -61,11 +61,11 @@ export default function SearchResults() {
     const all = [
       ...completed.map((r) => ({
         id: r.id, date: r.date, overallScore: r.overallScore,
-        title: `Mock Interview · ${new Date(r.date).toLocaleDateString()}`,
+        title: `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`,
       })),
       ...mockReports.map((r) => ({
         id: r.id, date: r.date, overallScore: r.overallScore,
-        title: `Mock Interview · ${new Date(r.date).toLocaleDateString()}`,
+        title: `${t("search.mockInterview")} · ${new Date(r.date).toLocaleDateString()}`,
       })),
     ];
     return all.filter((r) =>

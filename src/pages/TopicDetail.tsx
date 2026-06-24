@@ -3,7 +3,8 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { PageHeader, Tabs, Button } from "@/components/ui-bits";
 import { useI18n } from "@/i18n";
 import { getTopicBySlug } from "@/data/mockTopics";
-import { toast } from "sonner";
+import { isTopicSaved as isTopicSavedStorage, saveTopic as saveTopicStorage } from '@/lib/mockStorage';
+import { toast } from 'sonner';
 import { ReadTab } from "./topic/ReadTab";
 import { VocabularyTab } from "./topic/VocabularyTab";
 import { SentenceTab } from "./topic/SentenceTab";
@@ -21,36 +22,12 @@ const outcomeKeys: Record<string, string> = {
   Interview: "topic.outcomeInterview",
 };
 
-const SAVED_TOPICS_KEY = 'devenglish_saved_topics';
 
-function isTopicSaved(slug: string): boolean {
-  try {
-    const raw = localStorage.getItem(SAVED_TOPICS_KEY);
-    if (!raw) return false;
-    const list: string[] = JSON.parse(raw);
-    return list.includes(slug);
-  } catch {
-    return false;
-  }
-}
-
-function saveTopic(slug: string): void {
-  try {
-    const raw = localStorage.getItem(SAVED_TOPICS_KEY);
-    const list: string[] = raw ? JSON.parse(raw) : [];
-    if (!list.includes(slug)) {
-      list.push(slug);
-      localStorage.setItem(SAVED_TOPICS_KEY, JSON.stringify(list));
-    }
-  } catch {
-    // ignore
-  }
-}
 
 function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof getTopicBySlug>> }) {
   const { t } = useI18n();
   const [tab, setTab] = useState("Read");
-  const [topicSaved, setTopicSaved] = useState(() => isTopicSaved(topic.slug));
+  const [topicSaved, setTopicSaved] = useState(() => isTopicSavedStorage(topic.slug));
 
   const tabLabels = tabKeys.map((k) => t('topic.tab' + k));
 
@@ -58,7 +35,7 @@ function TopicDetailContent({ topic }: { topic: NonNullable<ReturnType<typeof ge
     if (topicSaved) {
       toast.info(t('topic.topicAlreadySaved'));
     } else {
-      saveTopic(topic.slug);
+      saveTopicStorage(topic.slug);
       setTopicSaved(true);
       toast.success(t('topic.topicSaved'));
     }

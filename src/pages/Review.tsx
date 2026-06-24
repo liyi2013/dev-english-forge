@@ -12,6 +12,8 @@ import {
   getCompletedReports,
   getReviewQueue,
   updateReviewItemStatus,
+  isMockItemReviewed,
+  markMockItemReviewed,
   type ReviewQueueItem,
 } from "@/lib/mockStorage";
 import type { ReviewItem } from "@/types/review";
@@ -41,9 +43,12 @@ export default function Review() {
   const reviewListRef = useRef<HTMLDivElement>(null);
 
   // --- Initialize local review items from both mock data and localStorage ---
-  const [mockItems] = useState(getReviewItems);
+  const [mockItems] = useState(() => getReviewItems().map((item) => ({
+    ...item,
+    status: isMockItemReviewed(item.id) ? 'reviewed' : item.status,
+  })));
 
-  const [queueItems, setQueueItems] = useState<ReviewQueueItem[]>(() => getReviewQueue());
+  const [queueItems] = useState<ReviewQueueItem[]>(() => getReviewQueue());
 
   // Merge into display items with safe defaults
   const [displayItems, setDisplayItems] = useState<DisplayItem[]>(() => {
@@ -109,6 +114,7 @@ export default function Review() {
       )
     );
     updateReviewItemStatus(id, 'reviewed');
+    markMockItemReviewed(id);
     toast.success(t('review.reviewItemUpdated'));
   };
 
@@ -330,7 +336,7 @@ export default function Review() {
               reports.map((r) => (
                 <Link key={r.id} to="/ai-interview/report" className="panel p-4 flex items-center justify-between hover:border-primary/40 transition block">
                   <div>
-                    <p className="text-sm font-medium">Mock Interview · {new Date(r.date).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium">{t("review.mockInterview")} · {new Date(r.date).toLocaleDateString()}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{t('review.score')}: {r.overallScore}/100</p>
                   </div>
                   <span className={`font-mono text-sm font-semibold ${r.overallScore >= 70 ? 'text-success' : 'text-warning'}`}>
