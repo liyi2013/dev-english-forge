@@ -216,7 +216,7 @@ describe("Button clickability — full audit", () => {
 
     it("Scenario cards are clickable and call toast.info", async () => {
       renderWP(<WorkplaceEnglish />);
-      const cards = document.querySelectorAll('[class*="cursor-pointer"]');
+      const cards = screen.getAllByRole("button", { name: /即将推出|Coming soon/i });
       expect(cards.length).toBeGreaterThanOrEqual(1);
       fireEvent.click(cards[0]);
       expect(vi.mocked(toast.info)).toHaveBeenCalled();
@@ -227,7 +227,7 @@ describe("Button clickability — full audit", () => {
   describe("InterviewEnglish", () => {
     it("Scenario cards are clickable and call toast.info", async () => {
       renderWP(<InterviewEnglish />);
-      const cards = document.querySelectorAll('[class*="cursor-pointer"]');
+      const cards = screen.getAllByRole("button", { name: /即将推出|Coming soon/i });
       expect(cards.length).toBeGreaterThanOrEqual(1);
       fireEvent.click(cards[0]);
       expect(vi.mocked(toast.info)).toHaveBeenCalled();
@@ -288,6 +288,41 @@ describe("Button clickability — full audit", () => {
       expect(langBtn).toBeDefined();
       fireEvent.click(langBtn);
       // After clicking, button should show 中文
+      expect(screen.getByText("中文")).toBeDefined();
+      const stored = localStorage.getItem("devenglish_locale");
+      expect(stored).toBe("en-US");
+    });
+  });
+
+  // =========== AppLayout i18n ===========
+  describe("AppLayout i18n", () => {
+    it("shows Chinese streak text and no raw keys on initial zh-CN render", async () => {
+      // Clear localStorage locale to ensure default zh-CN
+      localStorage.removeItem("devenglish_locale");
+      renderWP(<AppLayout />);
+      // Should see Chinese streak text
+      expect(screen.getByText("12 天连续学习")).toBeDefined();
+      // Should NOT see raw i18n keys
+      expect(screen.queryByText("nav.streak")).toBeNull();
+      expect(screen.queryByText("nav.streakHint")).toBeNull();
+      expect(screen.queryByText("common.notifications")).toBeNull();
+      // On zh-CN, notification aria-label should be 通知
+      const bellBtn = screen.getByLabelText("通知");
+      expect(bellBtn).toBeDefined();
+    });
+
+    it("switches to English and shows English streak text", async () => {
+      localStorage.removeItem("devenglish_locale");
+      renderWP(<AppLayout />);
+      // Switch language
+      const langBtn = screen.getByText("EN");
+      fireEvent.click(langBtn);
+      // After switching to en-US, the streak text should be English
+      // en-US is async-loaded, so waitFor is needed
+      await waitFor(() => {
+        expect(screen.getByText("12-day streak")).toBeDefined();
+      });
+      // Language switcher button should now show 中文
       expect(screen.getByText("中文")).toBeDefined();
       const stored = localStorage.getItem("devenglish_locale");
       expect(stored).toBe("en-US");

@@ -9,6 +9,8 @@ const enUS: Record<string, string> = {
   'nav.profile': 'Profile',
   'nav.workspace': 'Workspace',
   'nav.home': 'Home',
+  'nav.streak': '12-day streak',
+  'nav.streakHint': 'Keep it going. 8 mins today.',
 
   'common.save': 'Save',
   'common.saved': 'Saved',

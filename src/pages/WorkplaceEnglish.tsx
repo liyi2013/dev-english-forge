@@ -38,7 +38,7 @@ export default function WorkplaceEnglish() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {scenarios.map((s) => (
-              <div key={s.name} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))}>
+              <div key={s.name} role="button" tabIndex={0} aria-label={t("common.comingSoon")} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toast.info(t("common.comingSoon")); } }}>
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-md bg-accent text-primary flex items-center justify-center shrink-0">
                     <s.icon className="w-4 h-4" />

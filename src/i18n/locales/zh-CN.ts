@@ -9,6 +9,8 @@ const zhCN: Record<string, string> = {
   'nav.profile': '个人中心',
   'nav.workspace': '工作区',
   'nav.home': '首页',
+  'nav.streak': '12 天连续学习',
+  'nav.streakHint': '继续保持，今天已学习 8 分钟。',
 
   'common.save': '收藏',
   'common.saved': '已收藏',

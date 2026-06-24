@@ -61,7 +61,7 @@ export default function TechnicalEnglish() {
             <h2 className="text-sm font-semibold text-foreground mb-3">{t('learning.center')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {pathKeys.map((p) => (
-                <div key={p.nameKey} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))}>
+                <div key={p.nameKey} role="button" tabIndex={0} aria-label={t("common.comingSoon")} className="panel p-4 hover:border-primary/40 transition cursor-pointer" onClick={() => toast.info(t("common.comingSoon"))} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toast.info(t("common.comingSoon")); } }}>
                   <h4 className="text-sm font-semibold">{t(p.nameKey)}</h4>
                   <p className="text-xs text-muted-foreground mt-1">{t(p.focusKey)}</p>
                   <div className="mt-3 flex items-center gap-2">
